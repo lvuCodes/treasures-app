@@ -1,0 +1,249 @@
+/* Grass theme (macOS Terminal "Grass" inspired), with a lighter green. */
+:root {
+  --bg: #1f8a4d;
+  /* grass green, lightened */
+  --panel: #17713f;
+  /* darker green for cards / headers */
+  --code-bg: #15693a;
+  --text: #dcd8a4;
+  /* muted wheat (secondary text) */
+  --text-h: #fff6c2;
+  /* bright wheat (headings / primary text) */
+  --border: rgba(255, 246, 194, 0.3);
+  --accent: #ffd23f;
+  /* gold */
+  --on-accent: #1c1500;
+  /* readable text on top of --accent (dark for bright accents) */
+
+  /* Terrain + state colours track the active theme by lightly tinting fixed,
+     high-visibility anchors with the theme bg. Diggable soil stays a warm tan
+     (the dominant, must-be-visible state); rock stays a cool grey; wall recedes
+     by darkening the bg. dug/confirmed derive from bg (dark) and green. */
+  --wall: color-mix(in srgb, var(--bg) 80%, #000 20%);
+  /* recedes (darker bg) */
+  --soil: color-mix(in srgb, var(--accent) 64%, #fff 36%);
+  /* diggable — pale accent so rec stands out */
+  --rock: color-mix(in srgb, #9aa6bd 85%, var(--bg) 15%);
+  /* cool grey-blue — two-hit. This is the LIGHT rock for dark themes; the
+     light-theme block below swaps in a darker rock so it stays visible on pale
+     backgrounds (white/silver) too, on the map and the saved-map minimaps. */
+  --dug: color-mix(in srgb, var(--bg) 72%, #000 28%);
+  /* cleared / empty */
+  --confirmed: color-mix(in srgb, var(--bg) 50%, #36b06a 50%);
+  /* located 🟢/🟩 */
+  --rec: color-mix(in srgb, var(--accent) 84%, #000 16%);
+  /* recommended dig — a deeper accent so hammer cells pop vs the pale soil */
+  --accent-edge: color-mix(in srgb, var(--accent) 58%, #000 42%);
+  /* accent border */
+
+  /* Per-item ring / swatch colours, ANSI-style: this default set is the BRIGHT
+     palette for dark themes; the light-theme block below swaps in the darker
+     "normal" set so colours stay legible on pale backgrounds. --item-forced is
+     the purple "guaranteed item, owner unknown" ring. Indexed by item number. */
+  --item-1: #5c9eff;  /* blue */
+  --item-2: #ffd23f;  /* yellow */
+  --item-3: #ff6ac1;  /* magenta */
+  --item-4: #5af78e;  /* green */
+  --item-5: #5ad4e6;  /* cyan */
+  --item-6: #c9a06a;  /* tan */
+  --item-7: #b8e62d;  /* lime */
+  --item-8: #ff9ec4;  /* pink */
+  --item-9: #8fd0ff;  /* sky */
+  --item-10: #2fd6b6; /* teal */
+  --item-forced: #c08bff; /* violet */
+
+  --sans: "Belanosima", system-ui, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  font: 16px/1.45 var(--sans);
+  color-scheme: dark;
+  color: var(--text-h);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  min-height: 100svh;
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE/Edge legacy */
+}
+
+body::-webkit-scrollbar,
+html::-webkit-scrollbar,
+#root::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+#root {
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* ---- selectable themes (macOS Terminal profile inspired) ----
+   Grass (above) is the default. Each block overrides the palette; soil/rock
+   stay constant for game legibility and --rec tracks --accent. Light themes
+   flip color-scheme. Applied via document.documentElement[data-theme]. */
+[data-theme="homebrew"] {
+  --bg: #000000;
+  --panel: #0c1a0c;
+  --code-bg: #0f230f;
+  --text: #1fb43a;
+  --text-h: #39ff5a;
+  --border: rgba(57, 255, 90, 0.3);
+  --accent: #39ff5a;
+  /* accent is a very bright green; deepen the hammer fill more so it pops
+     against the pale-green soil (the global 16% darken isn't enough here) */
+  --rec: color-mix(in srgb, var(--accent) 52%, #000 48%);
+}
+
+[data-theme="pro"] {
+  --bg: #000000;
+  --panel: #161616;
+  --code-bg: #1d1d1d;
+  --text: #c8c8c8;
+  --text-h: #ffffff;
+  --border: rgba(255, 255, 255, 0.22);
+  --accent: #4aa3ff;
+}
+
+[data-theme="ocean"] {
+  --bg: #224fbc;
+  --panel: #1b429e;
+  --code-bg: #173887;
+  --text: #d4dfff;
+  --text-h: #ffffff;
+  --border: rgba(255, 255, 255, 0.3);
+  --accent: #38c6e8;
+  /* cyan — thematic for ocean; gold clashed and read poorly */
+  --on-accent: #06283d;
+  /* deep navy text on the cyan accent */
+}
+
+[data-theme="red-sands"] {
+  --bg: #7a251e;
+  --panel: #641d18;
+  --code-bg: #551813;
+  --text: #f3d3ab;
+  --text-h: #ffffff;
+  --border: rgba(255, 255, 255, 0.28);
+  --accent: #ffce54;
+}
+
+[data-theme="man-page"] {
+  color-scheme: light;
+  --bg: #f4e8c8;
+  --panel: #ecdcb0;
+  --code-bg: #e5d29c;
+  --text: #4a3b22;
+  --text-h: #1f1809;
+  --border: rgba(31, 24, 9, 0.28);
+  --accent: #9a5b00;
+  --on-accent: #fff;
+}
+
+[data-theme="novel"] {
+  color-scheme: light;
+  --bg: #dfdbc3;
+  --panel: #d2ccae;
+  --code-bg: #cac3a1;
+  --text: #4b3a2a;
+  --text-h: #1c130a;
+  --border: rgba(28, 19, 10, 0.28);
+  --accent: #7a4a1f;
+  --on-accent: #fff;
+}
+
+[data-theme="silver-aerogel"] {
+  color-scheme: light;
+  --bg: #bcbcbc;
+  --panel: #adadad;
+  --code-bg: #a3a3a3;
+  --text: #2a2a2a;
+  --text-h: #000000;
+  --border: rgba(0, 0, 0, 0.25);
+  --accent: #1565c0;
+  --on-accent: #fff;
+}
+
+[data-theme="basic"] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --panel: #f0f0f0;
+  --code-bg: #eaeaea;
+  --text: #444444;
+  --text-h: #000000;
+  --border: rgba(0, 0, 0, 0.2);
+  --accent: #1565c0;
+  --on-accent: #fff;
+}
+
+/* Light themes get the darker "normal" ANSI-style item palette so the rings and
+   swatches stay legible on pale backgrounds (the bright defaults wash out). */
+[data-theme="man-page"],
+[data-theme="novel"],
+[data-theme="silver-aerogel"],
+[data-theme="basic"] {
+  /* darker rock so the two-hit cells read on pale backgrounds */
+  --rock: color-mix(in srgb, #5b6678 85%, var(--bg) 15%);
+  --item-1: #1565c0;  /* blue */
+  --item-2: #8a6d00;  /* dark gold */
+  --item-3: #c2185b;  /* magenta */
+  --item-4: #1f8a3b;  /* green */
+  --item-5: #0e7c8a;  /* cyan */
+  --item-6: #8a5a2b;  /* brown */
+  --item-7: #5a8a00;  /* olive-lime */
+  --item-8: #b5497f;  /* pink */
+  --item-9: #1d74d8;  /* sky */
+  --item-10: #0a8f78; /* teal */
+  --item-forced: #7b1fa2; /* violet */
+}
+
+h1 {
+  font-family: var(--sans);
+  font-weight: 500;
+  color: var(--text-h);
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+h2 {
+  font-weight: 400;
+  margin: 10px 0 0;
+  text-align: center;
+}
+
+b {
+  font-weight: 500;
+}
+
+p {
+  margin: 0;
+}
+
+/* Native form controls don't inherit font-family — force the app font. */
+button,
+input,
+select,
+textarea {
+  font-family: var(--sans);
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 0.85em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--code-bg);
+  color: var(--text-h);
+}
