@@ -1,0 +1,17 @@
+/* Map-input-specific styles. The shared cell/grid substrate lives in the app
+   shell stylesheet (used by both the input and result grids). */
+
+/* Live drag-rectangle size readout, pinned just off the cursor. */
+.drag-size {
+  position: fixed;
+  z-index: 50;
+  pointer-events: none;
+  padding: 2px 7px;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  background: var(--accent);
+  color: var(--on-accent);
+  border: 1px solid var(--accent-edge);
+  border-radius: 5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}

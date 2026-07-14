@@ -1,4 +1,5 @@
-import { defineConfig, type Plugin } from 'vite'
+import { defineConfig } from 'vitest/config'
+import type { Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
@@ -48,4 +49,9 @@ export default defineConfig({
   // (per the zero-dependency static-zip distribution constraint).
   base: './',
   plugins: [react(), captureEndpoint()],
+  test: {
+    // Provide an in-memory localStorage for every test (see the setup file).
+    // Test files opt into jsdom per-file via `// @vitest-environment jsdom`.
+    setupFiles: ['./src/test-setup.ts'],
+  },
 })

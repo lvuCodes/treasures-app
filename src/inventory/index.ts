@@ -9,3 +9,5 @@ export {
   itemColor,
   type ItemType,
 } from "./item-catalog";
+export { ItemSteppers } from "./ItemSteppers";
+export { ItemStatusTable, FoundKeptTable } from "./ItemTable";

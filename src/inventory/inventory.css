@@ -1,0 +1,202 @@
+/* Item panel: the status table (solve mode / repick) and the input steppers.
+   Consumes shared palette tokens so it restyles per theme. */
+
+.items {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  min-width: 320px;
+  /* cap at the input map's width: 10 cells × 40px + 9 × 3px gap + 2 × 3px pad + border */
+  max-width: calc(10 * 40px + 9 * 3px + 2 * 3px + 2px);
+  table-layout: fixed;
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+
+  /* Round the corner cells so their backgrounds follow the table's rounded
+     border. No overflow:hidden — that clips the outer border at the corners. */
+  & thead th:first-child {
+    border-top-left-radius: 4px;
+  }
+
+  & thead th:last-child {
+    border-top-right-radius: 4px;
+  }
+
+  & tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 4px;
+  }
+
+  & tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 4px;
+  }
+
+  & th:first-child,
+  & td:first-child {
+    width: 30%;
+  }
+
+  & th:last-child,
+  & td:last-child {
+    width: 70%;
+  }
+
+  & caption {
+    text-align: center;
+    font-weight: 500;
+    padding-bottom: 6px;
+    color: var(--text-h);
+  }
+
+  & th,
+  & td {
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 10px;
+    text-align: center;
+    font-size: 0.95rem;
+    color: var(--text-h);
+  }
+
+  & th:last-child,
+  & td:last-child {
+    border-right: none;
+  }
+
+  & tr:last-child td {
+    border-bottom: none;
+  }
+
+  & th {
+    background: var(--panel);
+    font-weight: 500;
+    text-decoration: underline;
+  }
+
+  & td:first-child {
+    font-family: var(--mono);
+    font-size: 1.2rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 400;
+  }
+}
+
+/* A found/located row dims its first cell. */
+tr.is-found td:first-child {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+
+/* Colour chip in an item-table row, tying the row to its map cells' ring. */
+.item-swatch {
+  display: inline-block;
+  width: 0.95em;
+  height: 0.95em;
+  border-radius: 3px;
+  vertical-align: -0.12em;
+  margin-right: 6px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+/* Input item grid (thin 1×n vs. wide items kept in two columns). */
+.item-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+  /* match the items table's width cap (input map width) */
+  max-width: calc(10 * 40px + 9 * 3px + 2 * 3px + 2px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.item-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.item-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel);
+
+  .item-label {
+    font-family: var(--mono);
+    font-size: 1.2rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-h);
+  }
+}
+
+/* Stepper — clearly a pair of buttons around a count. */
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 32px;
+    height: 32px;
+    /* optical centring: the +/− ink sits low-left of its glyph box, so a touch
+       of bottom/left padding nudges it back to centre */
+    padding: 0 0 2px 1px;
+    font-size: 1.4rem;
+    font-weight: 500;
+    line-height: 1;
+    border: 1px solid var(--accent-edge);
+    border-radius: 6px;
+    background: var(--accent);
+    color: var(--on-accent);
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+
+    &:hover {
+      filter: brightness(1.08);
+    }
+
+    &:active {
+      transform: translateY(1px);
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: default;
+      box-shadow: none;
+    }
+  }
+
+  .count {
+    min-width: 28px;
+    text-align: center;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 3px 8px;
+  }
+}
+
+/* Narrow view: let the table and stepper grid fill the column. */
+@media (max-width: 900px) {
+  .items {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .item-grid {
+    max-width: 100%;
+  }
+}

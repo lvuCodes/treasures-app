@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import "./App.css";
 import { ThemeSwitcher, useTheme } from "./theme";
 import {
@@ -10,9 +10,13 @@ import {
   withEntry,
 } from "./grid";
 import { SavedMaps, useSavedMaps } from "./saved-maps";
+import { InputGrid, useMapPaint } from "./map-input";
 import {
   FORCED_COLOR,
+  FoundKeptTable,
   ITEM_TYPES,
+  ItemStatusTable,
+  ItemSteppers,
   KEYCAPS,
   itemColor,
 } from "./inventory";
@@ -20,7 +24,6 @@ import {
   cellKey,
   evaluate,
   feasibleGlyphs,
-  fillRect,
   nextDigCode,
   partGlyphForFootprint,
   partLayout,
@@ -246,25 +249,6 @@ function App() {
   // saved.status, which carries the always-on save/load feedback line).
   const [savedExportStatus, setSavedExportStatus] = useState("");
 
-  // Click-and-drag soil painting (input mode): drag from the start cell to the
-  // current cell to fill that rectangle with soil. `dragged` suppresses the
-  // click-cycle a drag would otherwise trigger; `baseGrid` is the grid snapshot
-  // at drag start so each move re-fills from a clean base (rectangle, not trail).
-  const painting = useRef(false);
-  const dragged = useRef(false);
-  const dragStart = useRef<[number, number] | null>(null);
-  const baseGrid = useRef<number[][] | null>(null);
-  // What the drag paints: the next state in the click cycle from the start
-  // cell (wall→soil→rock→wall), so a drag steps the whole rectangle one stage.
-  const fillValue = useRef(1);
-  // Live size readout for the current drag-rectangle, shown by the cursor once
-  // any side exceeds 4. Null when not dragging (or while the rect is small).
-  // `transform` places it in the quadrant opposite the drag so the mouse pointer
-  // never covers it.
-  const [dragSize, setDragSize] = useState<
-    { w: number; h: number; x: number; y: number; transform: string } | null
-  >(null);
-
   // Scoot the page over (CSS `body.about-open`) while the About sidebar is open;
   // on narrow screens the sidebar is full-width, so the app is pushed off-view.
   useEffect(() => {
@@ -272,30 +256,10 @@ function App() {
     return () => document.body.classList.remove("about-open");
   }, [aboutOpen]);
 
-  // End any drag-paint when the mouse is released. `mouseup` covers releases
-  // over the document; the `mousemove` no-buttons check catches a release that
-  // happened off-window (where no mouseup ever reaches us) the moment the cursor
-  // returns; `blur` covers losing the window entirely.
-  useEffect(() => {
-    const stop = () => {
-      painting.current = false;
-      setDragSize(null);
-    };
-    const onMove = (e: MouseEvent) => {
-      if (painting.current && e.buttons === 0) stop();
-    };
-    window.addEventListener("mouseup", stop);
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("blur", stop);
-    return () => {
-      window.removeEventListener("mouseup", stop);
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("blur", stop);
-    };
-  }, []);
-
   const total = counts.reduce((a, b) => a + b, 0);
   const locked = result !== null;
+  // Terrain drawing for the input map (click-cycle + drag-paint).
+  const paint = useMapPaint({ grid, setGrid, locked });
   // The item panel shows the count steppers during initial input and while
   // re-picking; the map stays locked during a re-pick so its dig state is kept.
   const inputMode = !locked || repick;
@@ -333,63 +297,6 @@ function App() {
     () => recordedFootprints(grid, dug, parts, expandedItems),
     [grid, dug, parts, expandedItems],
   );
-
-  function cycleCell(r: number, c: number) {
-    if (locked) return;
-    setGrid((g) =>
-      g.map((row, ri) =>
-        ri === r ? row.map((v, ci) => (ci === c ? (v + 1) % 3 : v)) : row,
-      ),
-    );
-  }
-
-  // Input mode: mouse-down begins a potential drag, snapshotting the grid so the
-  // rectangle re-fills from a clean base on every move. A pure click (no drag)
-  // falls through to cycleCell.
-  function paintDown(e: React.MouseEvent, r: number, c: number) {
-    if (locked) return;
-    e.preventDefault();
-    painting.current = true;
-    dragged.current = false;
-    dragStart.current = [r, c];
-    baseGrid.current = grid.map((row) => [...row]);
-    fillValue.current = (grid[r][c] + 1) % 3; // wall→soil→rock→wall, matching click cycle
-    setDragSize(null);
-  }
-
-  // Fill the rectangle spanned by the drag-start cell and (r,c) — with soil if
-  // the drag began on a wall, or wall if it began on a diggable cell. Applied
-  // over the start-of-drag snapshot so the shape is always a rectangle.
-  function paintEnter(e: React.MouseEvent, r: number, c: number) {
-    if (locked || !painting.current) return;
-    const s = dragStart.current;
-    const base = baseGrid.current;
-    if (!s || !base) return;
-    dragged.current = true;
-    setGrid(fillRect(base, s[0], s[1], r, c, fillValue.current));
-    // Offset into the quadrant opposite the drag direction: dragging right/down
-    // pushes the readout left/up of the cursor, and vice-versa.
-    const gap = 14;
-    const near = `${gap}px`;
-    const far = `calc(-100% - ${gap}px)`;
-    const tx = c - s[1] < 0 ? near : far;
-    const ty = r - s[0] < 0 ? near : far;
-    setDragSize({
-      w: Math.abs(c - s[1]) + 1,
-      h: Math.abs(r - s[0]) + 1,
-      x: e.clientX,
-      y: e.clientY,
-      transform: `translate(${tx}, ${ty})`,
-    });
-  }
-
-  function cellClick(r: number, c: number) {
-    if (dragged.current) {
-      dragged.current = false; // this click ends a drag — don't also cycle
-      return;
-    }
-    cycleCell(r, c);
-  }
 
   function changeCount(i: number, delta: number) {
     if (locked && !repick) return; // editable during input and re-pick
@@ -665,19 +572,21 @@ function App() {
         <section>
           <h2>{locked ? "Map" : "Input Map"}</h2>
 
-          {!locked && (
-            <p className="hint">
-              Cells start as wall. Click to cycle <b>dig → rock → wall</b> (tan = dig, 🪨 = rock, dark = wall).
-              <br />
-              Click and drag to make rectangle inputs.
-            </p>
-          )}
-          <div
-            className="grid"
-            role="grid"
-            aria-label="map"
-            style={{ gridTemplateColumns: `repeat(${cols.length}, 40px)` }}
-          >
+          {!locked ? (
+            <InputGrid
+              grid={grid}
+              paintDown={paint.paintDown}
+              paintEnter={paint.paintEnter}
+              cellClick={paint.cellClick}
+              dragSize={paint.dragSize}
+            />
+          ) : (
+            <div
+              className="grid"
+              role="grid"
+              aria-label="map"
+              style={{ gridTemplateColumns: `repeat(${cols.length}, 40px)` }}
+            >
             {rows.map((r) =>
               cols.map((c) => {
                 const v = grid[r][c];
@@ -762,9 +671,7 @@ function App() {
                     key={key}
                     className={cls}
                     style={style}
-                    onMouseDown={(e) => paintDown(e, r, c)}
-                    onMouseEnter={(e) => paintEnter(e, r, c)}
-                    onClick={(e) => (locked ? cycleDig(e, r, c) : cellClick(r, c))}
+                    onClick={(e) => cycleDig(e, r, c)}
                     onContextMenu={(e) => openPicker(e, r, c)}
                     aria-label={key}
                   >
@@ -773,7 +680,8 @@ function App() {
                 );
               }),
             )}
-          </div>
+            </div>
+          )}
 
           {locked && (
             <div className="map-legend" aria-label="map legend">
@@ -831,37 +739,7 @@ function App() {
                 Your map, digs, and found items are kept. Declare the still-hidden
                 pieces below, then recalculate.
               </p>
-              {repickFound.length > 0 && (
-                <table className="items">
-                  <thead>
-                    <tr>
-                      <th>Found (kept)</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {repickFound.map(({ code, dims, located }) => (
-                      <tr key={code} className="is-found">
-                        <td style={{ borderLeft: `5px solid ${itemColor(code)}` }}>
-                          <span className="item-swatch" style={{ background: itemColor(code) }} />
-                          {KEYCAPS[code - 1] ?? `${code}.`}{" "}
-                          {dims ? `${dims.long}×${dims.short}` : "?"}
-                        </td>
-                        <td>
-                          {located ? (
-                            <>
-                              <span className="item-swatch" style={{ background: itemColor(code) }} />
-                              located
-                            </>
-                          ) : (
-                            "✅ found"
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
+              <FoundKeptTable rows={repickFound} />
               <p className="hint">Declare hidden pieces to add:</p>
             </>
           )}
@@ -870,41 +748,11 @@ function App() {
           )}
           {inputMode && (
             <>
-              {/* Two columns keep the thin (1×n) and wide (2×n, 3×3) items apart
-                  so 1×2 / 2×2 (etc.) can't be misclicked for one another. */}
-              <div className="item-grid">
-                {[
-                  [0, 1, 2, 3],
-                  [4, 5, 6, 7],
-                ].map((indices, col) => (
-                  <div className="item-col" key={col}>
-                    {indices.map((i) => {
-                      const t = ITEM_TYPES[i];
-                      return (
-                        <div className="item-card" key={t.label}>
-                          <span className="item-label">{t.label}</span>
-                          <div className="stepper">
-                            <button
-                              onClick={() => changeCount(i, -1)}
-                              aria-label={`decrease ${t.label}`}
-                            >
-                              −
-                            </button>
-                            <span className="count">{counts[i]}</span>
-                            <button
-                              onClick={() => changeCount(i, +1)}
-                              disabled={(repick ? repickFound.length : 0) + total >= 10}
-                              aria-label={`increase ${t.label}`}
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
+              <ItemSteppers
+                counts={counts}
+                onChange={changeCount}
+                atCap={(repick ? repickFound.length : 0) + total >= 10}
+              />
 
               {(repick ? repickFound.length : 0) + total >= 10 && (
                 <p className="hint">Maximum of 10 items reached.</p>
@@ -964,48 +812,11 @@ function App() {
                 </div>
               )}
 
-              <table className="items">
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th>Found</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {expandedItems.map((t, i) => {
-                    const isFound = foundSet.has(i + 1);
-                    const isLocated = result?.located.has(i + 1) ?? false;
-                    // Found OR deduced-located rows carry their item colour — a
-                    // swatch plus a thick left accent — to match the map rings.
-                    const coloured = isFound || isLocated;
-                    const rowStyle = coloured
-                      ? { borderLeft: `5px solid ${itemColor(i + 1)}` }
-                      : undefined;
-                    return (
-                      <tr key={i} className={coloured ? "is-found" : ""}>
-                        <td style={rowStyle}>
-                          {coloured && (
-                            <span className="item-swatch" style={{ background: itemColor(i + 1) }} />
-                          )}
-                          {KEYCAPS[i] ?? `${i + 1}.`} {t.label}
-                        </td>
-                        <td>
-                          {isLocated ? (
-                            <>
-                              <span className="item-swatch" style={{ background: itemColor(i + 1) }} />
-                              located
-                            </>
-                          ) : isFound ? (
-                            "✅ found"
-                          ) : (
-                            "❌ not found"
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <ItemStatusTable
+                items={expandedItems}
+                foundSet={foundSet}
+                located={result?.located ?? new Set()}
+              />
 
               <div className="actions">
                 <button
@@ -1167,16 +978,6 @@ function App() {
               </>
             )}
           </div>
-        </div>
-      )}
-
-      {/* Drag-rectangle size readout — only once a side exceeds 4 cells. */}
-      {dragSize && (dragSize.w > 4 || dragSize.h > 4) && (
-        <div
-          className="drag-size"
-          style={{ left: dragSize.x, top: dragSize.y, transform: dragSize.transform }}
-        >
-          {dragSize.w}×{dragSize.h}
         </div>
       )}
 

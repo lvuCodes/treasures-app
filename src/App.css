@@ -205,17 +205,6 @@ button.cell.nodig:hover {
   background: var(--dug);
 }
 
-/* Colour chip in an Item-Table row, tying the row to its map cells' ring. */
-.item-swatch {
-  display: inline-block;
-  width: 0.95em;
-  height: 0.95em;
-  border-radius: 3px;
-  vertical-align: -0.12em;
-  margin-right: 6px;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
-}
-
 /* Guaranteed item cell, owning item not yet known — purple ring is applied
    inline; this is the fallback hover/structure hook. */
 .cell.forced {
@@ -423,21 +412,6 @@ button.part-cell:hover {
   filter: brightness(1.12);
 }
 
-/* live drag-rectangle size readout, pinned just off the cursor */
-.drag-size {
-  position: fixed;
-  z-index: 50;
-  pointer-events: none;
-  padding: 2px 7px;
-  font-size: 0.8rem;
-  font-variant-numeric: tabular-nums;
-  background: var(--accent);
-  color: var(--on-accent);
-  border: 1px solid var(--accent-edge);
-  border-radius: 5px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-}
-
 /* dev-only "save saved maps" export button, centred under the carousel with its
    status stacked underneath. The carousel itself is styled in saved-maps/. */
 .saved-maps-actions {
@@ -467,160 +441,8 @@ button.part-cell:hover {
   filter: brightness(1.12);
 }
 
-/* ---- item panel ---- */
-.items {
-  border-collapse: separate;
-  border-spacing: 0;
-  width: 100%;
-  min-width: 320px;
-  /* cap at the input map's width: 10 cells × 40px + 9 × 3px gap + 2 × 3px pad + border */
-  max-width: calc(10 * 40px + 9 * 3px + 2 * 3px + 2px);
-  table-layout: fixed;
-  margin-bottom: 14px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-}
-
-/* Round the corner cells so their backgrounds follow the table's rounded
-   border. No overflow:hidden — that clips the outer border at the corners. */
-.items thead th:first-child {
-  border-top-left-radius: 4px;
-}
-
-.items thead th:last-child {
-  border-top-right-radius: 4px;
-}
-
-.items tbody tr:last-child td:first-child {
-  border-bottom-left-radius: 4px;
-}
-
-.items tbody tr:last-child td:last-child {
-  border-bottom-right-radius: 4px;
-}
-
-.items th:first-child,
-.items td:first-child {
-  width: 30%;
-}
-
-.items th:last-child,
-.items td:last-child {
-  width: 70%;
-}
-
-.items caption {
-  text-align: center;
-  font-weight: 500;
-  padding-bottom: 6px;
-  color: var(--text-h);
-}
-
-.items th,
-.items td {
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 8px 10px;
-  text-align: center;
-  font-size: 0.95rem;
-  color: var(--text-h);
-}
-
-.items th:last-child,
-.items td:last-child {
-  border-right: none;
-}
-
-.items tr:last-child td {
-  border-bottom: none;
-}
-
-.items th {
-  background: var(--panel);
-  font-weight: 500;
-  text-decoration: underline;
-}
-
-.items td:first-child {
-  font-family: var(--mono);
-  font-size: 1.2rem;
-  font-variant-numeric: tabular-nums;
-  font-weight: 400;
-}
-
-/* ---- input item grid (thin vs. wide columns) ---- */
-.item-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 14px;
-  /* match the items table's width cap (input map width) */
-  max-width: calc(10 * 40px + 9 * 3px + 2 * 3px + 2px);
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.item-col {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.item-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 8px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  background: var(--panel);
-}
-
-.item-label {
-  font-family: var(--mono);
-  font-size: 1.2rem;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-h);
-}
-
-/* ---- stepper (clearly buttons) ---- */
-.stepper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-.stepper button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  width: 32px;
-  height: 32px;
-  /* optical centring: the +/− ink sits low-left of its glyph box, so a touch of
-     bottom/left padding nudges it back to centre */
-  padding: 0 0 2px 1px;
-  font-size: 1.4rem;
-  font-weight: 500;
-  line-height: 1;
-  border: 1px solid var(--accent-edge);
-  border-radius: 6px;
-  background: var(--accent);
-  color: var(--on-accent);
-  cursor: pointer;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.stepper button:hover {
-  filter: brightness(1.08);
-}
-
-.stepper button:active {
-  transform: translateY(1px);
-}
-
+/* Responsive: single-column layout on narrow screens. Item-panel widths adapt
+   in inventory.css. */
 @media (max-width: 900px) {
   .app {
     width: min(100%, calc(100% - 16px));
@@ -642,33 +464,6 @@ button.part-cell:hover {
     justify-content: center;
     margin: 0 auto;
   }
-
-  .items {
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-  }
-
-  .item-grid {
-    max-width: 100%;
-  }
-}
-
-.stepper button:disabled {
-  opacity: 0.35;
-  cursor: default;
-  box-shadow: none;
-}
-
-.stepper .count {
-  min-width: 28px;
-  text-align: center;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  background: var(--code-bg);
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  padding: 3px 8px;
 }
 
 .total {
@@ -819,11 +614,6 @@ button.part-cell:hover {
   border-color: #7be0a0;
   color: #f2fff5;
   font-weight: 500;
-}
-
-tr.is-found td:first-child {
-  opacity: 0.55;
-  text-decoration: line-through;
 }
 
 /* ---- footer credits ---- */
