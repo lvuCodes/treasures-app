@@ -77,6 +77,20 @@ describe("record + undo", () => {
   });
 });
 
+describe("recorder", () => {
+  it("records a found item via the right-click picker", () => {
+    render(<App />);
+    calculateSquare();
+    // A fresh 1×1 starts unfound.
+    expect(screen.getByText("❌ not found")).toBeTruthy();
+    // Right-click opens the recorder; the 1×1 button places the find.
+    fireEvent.contextMenu(cell(0, 0));
+    fireEvent.click(button(/1×1/));
+    // The item is now located, so no row reads "not found".
+    expect(screen.queryByText("❌ not found")).toBeNull();
+  });
+});
+
 describe("new map", () => {
   it("returns to input mode from solve mode", () => {
     render(<App />);

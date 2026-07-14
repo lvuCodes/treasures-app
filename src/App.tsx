@@ -1,14 +1,7 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import "./App.css";
 import { ThemeSwitcher, useTheme } from "./theme";
-import {
-  SIZE,
-  boundingBox,
-  centerGrid,
-  emptyGrid,
-  range,
-  withEntry,
-} from "./grid";
+import { SIZE, boundingBox, centerGrid, emptyGrid, range } from "./grid";
 import { SavedMaps, useSavedMaps } from "./saved-maps";
 import { InputGrid, useMapPaint } from "./map-input";
 import {
@@ -20,17 +13,14 @@ import {
   KEYCAPS,
   itemColor,
 } from "./inventory";
+import { useDigSession } from "./session";
 import {
   cellKey,
-  evaluate,
   feasibleGlyphs,
   nextDigCode,
   partGlyphForFootprint,
   partLayout,
-  recordedFootprints,
-  remapRepick,
   type DigCode,
-  type Evaluation,
 } from "./calculator/session";
 
 // 0 = wall/empty (default), 1 = dig/soil, 2 = rock — matches the solver's grid.
@@ -73,13 +63,12 @@ type Picker = { r: number; c: number; x: number; y: number; openLeft: boolean };
 // whether it would overflow the right edge and should flip left instead.
 const PICKER_MAX_WIDTH = 280;
 
-// Gopher Mode (dev-only) overlay on a recorded cell. "initial" = the first
-// gopher (🐁); "revealed" = a gopher uncovered by another (🐀) — both also
-// record dug=0 so the solver treats the cell as revealed-empty. "hit" flags a
-// gopher-revealed dig (🟨 cracked rock / 🧀 emptied soil / item keycap), all
-// rendered on a yellow background. The underlying DigCode in `dug` is what
-// feeds the calculator; this map is purely cosmetic + the export payload.
-type GopherKind = "initial" | "revealed" | "hit";
+// Gopher Mode (dev-only) overlay tags stored in the session's opaque overlay
+// channel. "initial" = the first gopher (🐁); "revealed" = a gopher uncovered by
+// another (🐀) — both also record dug=0 so the solver treats the cell as
+// revealed-empty. "hit" flags a gopher-revealed dig (🟨 cracked rock / 🧀 emptied
+// soil / item keycap), rendered on a yellow background. The overlay is purely
+// cosmetic plus the dev export; the session core never interprets these strings.
 
 // Dev-only: POST an export payload to the dev server's capture endpoint, which
 // writes it to captures/ on disk (see vite.config.ts). Returns a status string
@@ -205,33 +194,22 @@ function About({ onClose }: { onClose: () => void }) {
 
 function App() {
   const [grid, setGrid] = useState<number[][]>(emptyGrid);
-  const [counts, setCounts] = useState<number[]>(() => ITEM_TYPES.map(() => 0));
-  const [result, setResult] = useState<Evaluation | null>(null);
-  // "Keep map, reset items" mode: the solved map and all recorded digs stay
-  // frozen on screen while the item panel reverts to the count steppers, so the
-  // player can re-pick the inventory and recalculate from the same board.
-  const [repick, setRepick] = useState(false);
-  // Inventory snapshot taken when re-pick begins, so the found pieces' shapes
-  // survive while `counts` is zeroed for declaring the still-hidden pieces.
-  const [repickBase, setRepickBase] = useState<{ long: number; short: number }[]>([]);
-  // What the player has recorded at each dug cell. "r,c" → DigCode.
-  const [dug, setDug] = useState<Map<string, DigCode>>(() => new Map());
-  // Selected piece-part glyph per cell (set via right-click). "r,c" → glyph.
-  const [parts, setParts] = useState<Map<string, string>>(() => new Map());
-  // Gopher Mode (dev-only) overlay per cell. "r,c" → GopherKind. Gopher
-  // controls are always available in dev — no toggle.
-  const [gophers, setGophers] = useState<Map<string, GopherKind>>(() => new Map());
-  // Transient status line for the map-state export.
-  const [mapStateStatus, setMapStateStatus] = useState("");
-  // Click history so Undo can restore a cell's prior dig + part (incl. hammer).
-  const [history, setHistory] = useState<
-    {
-      key: string;
-      prevDug: DigCode | undefined;
-      prevPart: string | undefined;
-      prevGopher: GopherKind | undefined;
-    }[]
-  >([]);
+  // Saved-map retention: persisted terrain, the carousel, and the save/load
+  // status line. Also provides the session's auto-save-on-Calculate seam.
+  const saved = useSavedMaps();
+  // The coupled session state machine: item counts, per-cell recording maps, the
+  // opaque overlay channel, undo history, and the latest evaluation.
+  const session = useDigSession({
+    grid,
+    itemTypes: ITEM_TYPES,
+    onCalculate: (g) => saved.save(g, true),
+  });
+  const {
+    counts, dug, parts, overlay, result, error, history, total,
+    locked, repick, inputMode, expandedItems, foundSet, repickFound, footprints,
+  } = session;
+
+  // Recorder modal state (step 6 extracts this into the recorder feature).
   const [picker, setPicker] = useState<Picker | null>(null);
   const [pickerItem, setPickerItem] = useState<number | null>(null);
   // Dev-only: when set, the next item placed via the recorder is tagged as a
@@ -241,12 +219,8 @@ function App() {
   // About panel (dev-only) — a right-hand sidebar that scoots the app over on
   // wide screens and covers it on narrow ones, rather than replacing the view.
   const [aboutOpen, setAboutOpen] = useState(false);
-  const [error, setError] = useState("");
-  // Saved-map retention: persisted terrain, the carousel, and the save/load
-  // status line all live in the feature hook.
-  const saved = useSavedMaps();
-  // Dev-only feedback for the "save saved maps to server" export (separate from
-  // saved.status, which carries the always-on save/load feedback line).
+  // Dev-only capture status lines (map-state export, saved-maps export).
+  const [mapStateStatus, setMapStateStatus] = useState("");
   const [savedExportStatus, setSavedExportStatus] = useState("");
 
   // Scoot the page over (CSS `body.about-open`) while the About sidebar is open;
@@ -256,135 +230,33 @@ function App() {
     return () => document.body.classList.remove("about-open");
   }, [aboutOpen]);
 
-  const total = counts.reduce((a, b) => a + b, 0);
-  const locked = result !== null;
   // Terrain drawing for the input map (click-cycle + drag-paint).
   const paint = useMapPaint({ grid, setGrid, locked });
-  // The item panel shows the count steppers during initial input and while
-  // re-picking; the map stays locked during a re-pick so its dig state is kept.
-  const inputMode = !locked || repick;
 
-  // One entry per individual hidden item, in numbered order.
-  const expandedItems = useMemo(
-    () => ITEM_TYPES.flatMap((t, i) => Array.from({ length: counts[i] }, () => t)),
-    [counts],
-  );
-
-  // Items recorded somewhere on the map (auto-found).
-  const foundSet = useMemo(() => {
-    const s = new Set<number>();
-    for (const v of dug.values()) if (typeof v === "number" && v >= 1) s.add(v);
-    return s;
-  }, [dug]);
-
-  // Kept found pieces shown (read-only) while re-picking — distinct recorded
-  // item codes resolved against the pre-zeroed inventory snapshot.
-  const repickFound = useMemo(() => {
-    if (!repick) return [];
-    const codes = [...new Set(dug.values())]
-      .filter((v): v is number => typeof v === "number" && v >= 1)
-      .sort((a, b) => a - b);
-    return codes.map((code) => ({
-      code,
-      dims: repickBase[code - 1],
-      located: result?.located.has(code) ?? false,
-    }));
-  }, [repick, dug, repickBase, result]);
-
-  // Each recorded item's occupied cells — computed once, reused by the recorder
-  // when filtering feasible parts for every candidate item.
-  const footprints = useMemo(
-    () => recordedFootprints(grid, dug, parts, expandedItems),
-    [grid, dug, parts, expandedItems],
-  );
-
-  function changeCount(i: number, delta: number) {
-    if (locked && !repick) return; // editable during input and re-pick
-    // Kept found pieces already consume slots during re-pick — count them
-    // toward the 10-item cap so found + declared-hidden never exceeds it.
-    const base = repick ? repickFound.length : 0;
-    setCounts((cs) => {
-      const next = Math.max(0, cs[i] + delta);
-      const othersTotal = cs.reduce((a, b, ix) => (ix === i ? a : a + b), 0);
-      if (base + othersTotal + next > 10) return cs; // total capped at 10
-      return cs.map((v, ix) => (ix === i ? next : v));
-    });
-  }
-
-  function recompute(
-    dugMap: Map<string, DigCode>,
-    partsMap: Map<string, string>,
-    gopherMap: Map<string, GopherKind> = gophers,
-  ) {
-    setResult(evaluate(grid, dugMap, partsMap, expandedItems, new Set(gopherMap.keys())));
-  }
-
-  // Apply a cell change (dig + part + gopher overlay), push the prior state to
-  // history, recompute. An undefined value clears that field — so the ordinary
-  // recorder actions wipe any stale gopher tag; gopher actions pass a kind.
-  function commit(
-    key: string,
-    dugVal: DigCode | undefined,
-    glyph: string | undefined,
-    gopher?: GopherKind,
-  ) {
-    const nextDug = withEntry(dug, key, dugVal);
-    const nextParts = withEntry(parts, key, glyph);
-    const nextGophers = withEntry(gophers, key, gopher);
-    setHistory((h) => [
-      ...h,
-      { key, prevDug: dug.get(key), prevPart: parts.get(key), prevGopher: gophers.get(key) },
-    ]);
-    setDug(nextDug);
-    setParts(nextParts);
-    setGophers(nextGophers);
-    recompute(nextDug, nextParts, nextGophers);
-  }
-
-  // Clear all recorded digs/parts and recompute from the bare map + items.
-  function startSession() {
-    const freshDug = new Map<string, DigCode>();
-    const freshParts = new Map<string, string>();
-    setDug(freshDug);
-    setParts(freshParts);
-    setGophers(new Map());
-    setMapStateStatus("");
-    setHistory([]);
+  // Shell wrappers around the session's picker-agnostic actions: they also close
+  // the recorder modal and clear the dev capture status line (both shell-owned).
+  function recordCell(r: number, c: number, dugVal: DigCode, glyph?: string, overlayTag?: string) {
+    session.recordCell(r, c, dugVal, glyph, overlayTag);
     closePicker();
-    recompute(freshDug, freshParts, new Map());
+  }
+
+  function clearCell(r: number, c: number) {
+    session.clearCell(r, c);
+    closePicker();
+  }
+
+  // Clear all recorded digs and recompute from the bare map + items (Reset).
+  function startSession() {
+    session.startSession();
+    setMapStateStatus("");
+    closePicker();
   }
 
   // Return to the input phase (un-lock), clearing the session.
   function resetToInput() {
-    setDug(new Map());
-    setParts(new Map());
-    setGophers(new Map());
+    session.resetToInput();
     setMapStateStatus("");
-    setHistory([]);
-    setResult(null);
-    setRepick(false);
-    setError("");
     closePicker();
-  }
-
-  function submit() {
-    // During re-pick the count is the *hidden* declaration only — 0 is valid
-    // (every piece already found, just clearing a mis-declared one).
-    if (!repick && total === 0) return setError("Add at least one item (count > 0).");
-    setError("");
-    saved.save(grid, true); // auto-save the map (silently) on Calculate
-    if (repick) {
-      // Re-pick: keep every found piece, re-index it into the new inventory
-      // (found + newly-declared hidden), and re-solve against the kept digs.
-      const { counts: nc, dug: nd, items } = remapRepick(repickBase, dug, counts, ITEM_TYPES);
-      setCounts(nc);
-      setDug(nd);
-      setHistory([]); // undo can't cross the re-pick remap boundary
-      setRepick(false);
-      setResult(evaluate(grid, nd, parts, items, new Set(gophers.keys())));
-    } else {
-      startSession();
-    }
   }
 
   // Left-click cycle. Plain cells: hammer → cracked-rock → 0️⃣, then the recorder
@@ -407,7 +279,7 @@ function App() {
     // Any untouched rock (2-hit "circle") just cracks to its 1-hit "square",
     // keeping whatever overlay it carries (green/orange/purple).
     if (terrain === 2 && code === undefined) {
-      commit(key, "cracked", undefined);
+      session.commit(key, "cracked", undefined, undefined);
       return;
     }
     // Now a 1-hit square (soil, or already-cracked rock).
@@ -430,7 +302,7 @@ function App() {
       openPicker(e, r, c);
       return;
     }
-    commit(key, nextDigCode(code, terrain), undefined);
+    session.commit(key, nextDigCode(code, terrain), undefined, undefined);
   }
 
   // Recorder actions: each sets one cell, clearing any prior part.
@@ -448,31 +320,6 @@ function App() {
       : recordCell(r, c, 0, undefined, "hit");
   const logInitialGopher = (r: number, c: number) => recordCell(r, c, 0, undefined, "initial");
   const logRevealedGopher = (r: number, c: number) => recordCell(r, c, 0, undefined, "revealed");
-
-  function recordCell(r: number, c: number, dugVal: DigCode, glyph?: string, gopher?: GopherKind) {
-    commit(cellKey(r, c), dugVal, glyph, gopher);
-    closePicker();
-  }
-
-  function clearCell(r: number, c: number) {
-    const key = cellKey(r, c);
-    if (dug.has(key) || parts.has(key)) commit(key, undefined, undefined);
-    closePicker();
-  }
-
-  // Step back one click — restores the cell's prior dig + part state.
-  function undo() {
-    if (history.length === 0) return;
-    const last = history[history.length - 1];
-    const nextDug = withEntry(dug, last.key, last.prevDug);
-    const nextParts = withEntry(parts, last.key, last.prevPart);
-    const nextGophers = withEntry(gophers, last.key, last.prevGopher);
-    setHistory((h) => h.slice(0, -1));
-    setDug(nextDug);
-    setParts(nextParts);
-    setGophers(nextGophers);
-    recompute(nextDug, nextParts, nextGophers);
-  }
 
   function openPicker(e: React.MouseEvent, r: number, c: number) {
     e.preventDefault();
@@ -492,15 +339,15 @@ function App() {
 
   // Clear the input map back to all walls and reset item counts to zero.
   function clearMap() {
-    if (locked) return;
     setGrid(emptyGrid());
-    setCounts(ITEM_TYPES.map(() => 0));
+    session.clearCounts();
   }
 
   function newSession() {
     setGrid(emptyGrid());
-    setCounts(ITEM_TYPES.map(() => 0));
-    resetToInput();
+    session.newSession();
+    setMapStateStatus("");
+    closePicker();
   }
 
   // Recovery from an unsolvable state: keep the map AND every recorded dig, zero
@@ -508,10 +355,7 @@ function App() {
   // can re-pick the inventory and recalculate from the same board. The map stays
   // locked/frozen throughout. (Clearing the map too is "New Map".)
   function resetItems() {
-    setRepickBase(expandedItems); // remember found pieces' shapes before zeroing
-    setCounts(ITEM_TYPES.map(() => 0)); // steppers now declare hidden pieces
-    setError("");
-    setRepick(true);
+    session.resetItems();
     closePicker();
   }
 
@@ -541,7 +385,7 @@ function App() {
       counts,
       dug: [...dug],
       parts: [...parts],
-      gophers: [...gophers],
+      overlay: [...overlay],
     };
     setMapStateStatus(await saveCapture("map-state", payload));
   }
@@ -592,7 +436,7 @@ function App() {
                 const v = grid[r][c];
                 const key = cellKey(r, c);
                 const code = dug.get(key);
-                const gopher = gophers.get(key); // dev-only gopher overlay
+                const gopher = overlay.get(key); // dev-only gopher overlay tag
                 const cc = result?.confirmed[r]?.[c]; // structured cell from evaluate
                 const isEmpty = code === 0;
                 const isItem = typeof code === "number" && code >= 1;
@@ -750,14 +594,14 @@ function App() {
             <>
               <ItemSteppers
                 counts={counts}
-                onChange={changeCount}
+                onChange={session.changeCount}
                 atCap={(repick ? repickFound.length : 0) + total >= 10}
               />
 
               {(repick ? repickFound.length : 0) + total >= 10 && (
                 <p className="hint">Maximum of 10 items reached.</p>
               )}
-              <button className="primary" onClick={submit}>
+              <button className="primary" onClick={session.submit}>
                 {repick ? "Recalculate" : "Calculate!"}
               </button>
               {error && <p className="error">{error}</p>}
@@ -821,7 +665,7 @@ function App() {
               <div className="actions">
                 <button
                   className="primary"
-                  onClick={undo}
+                  onClick={session.undo}
                   disabled={history.length === 0}
                 >
                   ↩️ Undo
