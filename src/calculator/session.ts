@@ -10,6 +10,7 @@ import {
   type FootprintCell,
   type RecordedPart,
 } from "./footprint";
+export { partGlyphForFootprint } from "./footprint";
 import { analyzeArrangements, type JointTarget, type PlacementUnit } from "./arrangement";
 import type { Cell, Terrain } from "./cell-state";
 
@@ -294,17 +295,18 @@ export function evaluate(
   dug: Map<string, DigCode>,
   parts: Map<string, string>,
   items: ItemDims[],
-  // Cell keys ("r,c") a gopher has touched. A recorded item's footprint may
-  // span a gopher-revealed-empty cell (the "log an item on a gopher-emptied
-  // cell" flow), so these stay passable when inferring located footprints.
-  gopherCells: Set<string> = new Set(),
+  // Cell keys ("r,c") that stay passable for located-footprint inference even
+  // when recorded empty — a revealed-empty cell that may still turn out to host
+  // an item. The core does not interpret why a cell is passable; a caller (e.g.
+  // an overlay feature) supplies the set.
+  passableCells: Set<string> = new Set(),
 ): Evaluation {
   const rows = grid.length;
   const cols = grid[0]?.length ?? 0;
   const { grid: confirmed, located } = deriveConfirmedState(
     buildCells(grid, dug, parts),
     new Map(items.map((d, i) => [i + 1, d])),
-    gopherCells,
+    passableCells,
   );
   const found = new Set<number>();
   for (const v of dug.values()) if (typeof v === "number" && v >= 1) found.add(v);

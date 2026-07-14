@@ -4,6 +4,7 @@ import {
   inferFootprints,
   itemFootprints,
   deriveConfirmedState,
+  partGlyphForFootprint,
 } from "./footprint";
 import { walkthrough } from "./walkthrough";
 import type { Cell } from "./cell-state";
@@ -210,5 +211,47 @@ describe("ambiguous (length-4) internal finds", () => {
       );
       expect(cands.map(sortKeys)).toEqual([["0,0", "0,1", "0,2", "0,3"]]);
     });
+  });
+
+  // The forward glyph table (partGlyphForFootprint) and the inverse table
+  // (inferFootprints) are two encodings of one glyph alphabet. Assert they agree
+  // end-to-end so they can't silently drift: label every cell of a placement,
+  // then infer footprints back from each glyph and confirm the original
+  // placement is among the candidates. (DRY: two must-match outputs, one test.)
+  describe("glyph forward/inverse round-trip", () => {
+    // Every occupied cell of the h×w rectangle anchored at (r0,c0), as "r,c".
+    const rect = (r0: number, c0: number, h: number, w: number) => {
+      const keys: string[] = [];
+      for (let dr = 0; dr < h; dr++)
+        for (let dc = 0; dc < w; dc++) keys.push(`${r0 + dr},${c0 + dc}`);
+      return keys;
+    };
+
+    // (long, short, height, width) placements covering lines, boxes, and the
+    // length-4 line whose interior cells are the ambiguous "mid" case.
+    const cases: [number, number, number, number][] = [
+      [2, 1, 1, 2], // 1×2 horizontal
+      [2, 1, 2, 1], // 1×2 vertical
+      [3, 1, 1, 3], // 1×3 horizontal (has a mid)
+      [4, 1, 1, 4], // 1×4 horizontal (mid is ambiguous)
+      [2, 2, 2, 2], // 2×2 box
+      [3, 2, 2, 3], // 2×3 box
+      [3, 3, 3, 3], // 3×3 box
+    ];
+
+    for (const [long, short, h, w] of cases) {
+      it(`labels and re-infers a ${long}×${short} (${h}×${w}) placement`, () => {
+        const cellKeys = rect(2, 2, h, w).sort();
+        for (const k of cellKeys) {
+          const [r, c] = k.split(",").map(Number);
+          const glyph = partGlyphForFootprint(r, c, cellKeys, long, short);
+          const candidates = inferFootprints(glyph, r, c, long, short, anyFit).map(
+            (fp) => sortKeys(fp).join("|"),
+          );
+          // The original placement must be one of the glyph's candidate footprints.
+          expect(candidates).toContain(cellKeys.join("|"));
+        }
+      });
+    }
   });
 });

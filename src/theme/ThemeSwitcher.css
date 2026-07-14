@@ -1,0 +1,33 @@
+/* Styling for <ThemeSwitcher>. Consumes the palette tokens from themes.css, so
+   the bar restyles itself per active theme. */
+.theme-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0 0 18px;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.theme-btn {
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+  color: var(--text-h);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.theme-btn:hover {
+  filter: brightness(1.12);
+}
+
+.theme-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: 500;
+}

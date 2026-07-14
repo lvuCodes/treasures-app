@@ -1,19 +1,34 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import "./App.css";
+import { ThemeSwitcher, useTheme } from "./theme";
+import {
+  SIZE,
+  boundingBox,
+  centerGrid,
+  emptyGrid,
+  range,
+  withEntry,
+} from "./grid";
+import { SavedMaps, useSavedMaps } from "./saved-maps";
+import {
+  FORCED_COLOR,
+  ITEM_TYPES,
+  KEYCAPS,
+  itemColor,
+} from "./inventory";
 import {
   cellKey,
   evaluate,
   feasibleGlyphs,
   fillRect,
   nextDigCode,
+  partGlyphForFootprint,
   partLayout,
   recordedFootprints,
   remapRepick,
   type DigCode,
   type Evaluation,
 } from "./calculator/session";
-
-const SIZE = 10;
 
 // 0 = wall/empty (default), 1 = dig/soil, 2 = rock — matches the solver's grid.
 // Terrain shows by cell colour; rock also gets a 🪨 (grey alone is hard to read).
@@ -40,64 +55,11 @@ const MAP_LEGEND: { icon: ReactNode; label: string }[] = [
   { icon: "0️⃣ / #️⃣", label: "no / found item" },
 ];
 
-const ITEM_TYPES = [
-  { label: "1×1", long: 1, short: 1 },
-  { label: "1×2", long: 2, short: 1 },
-  { label: "1×3", long: 3, short: 1 },
-  { label: "1×4", long: 4, short: 1 },
-  { label: "2×2", long: 2, short: 2 },
-  { label: "2×3", long: 3, short: 2 },
-  { label: "2×4", long: 4, short: 2 },
-  { label: "3×3", long: 3, short: 3 },
-];
-
-const KEYCAPS = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
-
-// Per-item ring / swatch colours. The actual hues live in CSS custom properties
-// (--item-1..--item-10) so they adapt per theme, ANSI-style: a bright palette on
-// dark themes, a darker one on light themes (see index.css). Max 10 items.
-const ITEM_COLOR_COUNT = 10;
-
-// Forced-cell ring (a cell guaranteed to hold an item, owner not yet known).
-const FORCED_COLOR = "var(--item-forced)";
-
-function itemColor(index: number): string {
-  return `var(--item-${((index - 1) % ITEM_COLOR_COUNT) + 1})`;
-}
-
 // A cell-ring box-shadow that stays legible on any theme: the colour ring with
 // a dark then light hairline just inside it, so it separates from light soil,
 // dark dug, and same-hue theme backgrounds alike.
 function ringShadow(color: string): string {
   return `inset 0 0 0 3px ${color}, inset 0 0 0 4px rgba(0,0,0,0.6), inset 0 0 0 5px rgba(255,255,255,0.45)`;
-}
-
-// Positional part glyphs, mirroring session.ts's LINE_LAYOUT / BOX_LAYOUT, so a
-// cell dug out of a located footprint can be recorded with the right glyph.
-const LINE_H = { start: "⬅️", mid: "↔️", end: "➡️" } as const;
-const LINE_V = { start: "⬆️", mid: "↕️", end: "⬇️" } as const;
-const BOX_GLYPHS: Record<string, string> = {
-  "start,start": "╔", "start,mid": "╦", "start,end": "╗",
-  "mid,start": "╠", "mid,mid": "╬", "mid,end": "╣",
-  "end,start": "╚", "end,mid": "╩", "end,end": "╝",
-};
-
-// The part glyph for cell (r,c) within a located item's footprint (its occupied
-// cell keys + dims). 1×1 has no glyph.
-function partGlyphForFootprint(
-  r: number, c: number, cellKeys: string[], long: number, short: number,
-): string | undefined {
-  if (long === 1 && short === 1) return undefined;
-  const cells = cellKeys.map((k) => k.split(",").map(Number));
-  const rs = cells.map((x) => x[0]);
-  const cs = cells.map((x) => x[1]);
-  const r0 = Math.min(...rs), r1 = Math.max(...rs);
-  const c0 = Math.min(...cs), c1 = Math.max(...cs);
-  const pos = (i: number, lo: number, hi: number) => (i === lo ? "start" : i === hi ? "end" : "mid");
-  if (short === 1) {
-    return c1 > c0 ? LINE_H[pos(c, c0, c1)] : LINE_V[pos(r, r0, r1)];
-  }
-  return BOX_GLYPHS[`${pos(r, r0, r1)},${pos(c, c0, c1)}`];
 }
 
 // A recorder modal open over cell (r,c), anchored at viewport (x,y). `openLeft`
@@ -116,102 +78,6 @@ const PICKER_MAX_WIDTH = 280;
 // feeds the calculator; this map is purely cosmetic + the export payload.
 type GopherKind = "initial" | "revealed" | "hit";
 
-const THEMES = [
-  { id: "grass", label: "Grass" },
-  { id: "homebrew", label: "Homebrew" },
-  { id: "pro", label: "Pro" },
-  { id: "ocean", label: "Ocean" },
-  { id: "red-sands", label: "Red Sands" },
-  { id: "man-page", label: "Man Page" },
-  { id: "novel", label: "Novel" },
-  { id: "silver-aerogel", label: "Silver" },
-  { id: "basic", label: "Basic" },
-];
-
-const THEME_KEY = "mogo-theme";
-
-function loadTheme(): string {
-  try {
-    return localStorage.getItem(THEME_KEY) || "grass";
-  } catch {
-    return "grass"; // localStorage may be blocked on file:// origins
-  }
-}
-
-function emptyGrid(): number[][] {
-  return Array.from({ length: SIZE }, () => new Array<number>(SIZE).fill(0));
-}
-
-function range(lo: number, hi: number): number[] {
-  return Array.from({ length: hi - lo + 1 }, (_, i) => lo + i);
-}
-
-// Clone of `m` with `key` set to `v`, or deleted when `v` is undefined. The
-// per-cell state maps (dug / parts / gophers) all share this set-or-delete idiom.
-function withEntry<V>(m: Map<string, V>, key: string, v: V | undefined): Map<string, V> {
-  const next = new Map(m);
-  if (v === undefined) next.delete(key);
-  else next.set(key, v);
-  return next;
-}
-
-// Smallest rectangle containing every non-wall cell (map minimization).
-function boundingBox(grid: number[][]) {
-  let r0 = SIZE, r1 = -1, c0 = SIZE, c1 = -1;
-  for (let r = 0; r < SIZE; r++) {
-    for (let c = 0; c < SIZE; c++) {
-      if (grid[r][c] !== 0) {
-        r0 = Math.min(r0, r);
-        r1 = Math.max(r1, r);
-        c0 = Math.min(c0, c);
-        c1 = Math.max(c1, c);
-      }
-    }
-  }
-  if (r1 < 0) return { r0: 0, r1: SIZE - 1, c0: 0, c1: SIZE - 1 };
-  return { r0, r1, c0, c1 };
-}
-
-// Re-place a saved map's shape centred in a fresh SIZE×SIZE grid. When the
-// margin can't split evenly the extra goes to the right / bottom (e.g. a 5-wide
-// shape on a 10-wide grid sits as 2 | 5 | 3).
-function centerGrid(grid: number[][]): number[][] {
-  const { r0, r1, c0, c1 } = boundingBox(grid);
-  const h = r1 - r0 + 1;
-  const w = c1 - c0 + 1;
-  const top = Math.floor((SIZE - h) / 2);
-  const left = Math.floor((SIZE - w) / 2);
-  const out = emptyGrid();
-  for (let r = r0; r <= r1; r++) {
-    for (let c = c0; c <= c1; c++) {
-      out[top + (r - r0)][left + (c - c0)] = grid[r][c];
-    }
-  }
-  return out;
-}
-
-const SAVED_MAPS_KEY = "mogo-saved-maps";
-
-// Saved maps persist only the terrain grid (never item counts). Stored as the
-// full SIZE×SIZE grid; uniqueness is judged on the bounding-box crop so the same
-// shape in a different corner isn't saved twice.
-function loadSavedMaps(): number[][][] {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(SAVED_MAPS_KEY) || "[]");
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return []; // localStorage may be blocked on file:// origins
-  }
-}
-
-function persistSavedMaps(maps: number[][][]) {
-  try {
-    localStorage.setItem(SAVED_MAPS_KEY, JSON.stringify(maps));
-  } catch {
-    /* file:// origin may block localStorage — saved maps just won't persist */
-  }
-}
-
 // Dev-only: POST an export payload to the dev server's capture endpoint, which
 // writes it to captures/ on disk (see vite.config.ts). Returns a status string
 // for the UI. Only ever called from import.meta.env.DEV-gated handlers, so the
@@ -229,35 +95,6 @@ async function saveCapture(kind: string, data: unknown): Promise<string> {
   } catch {
     return "⚠️ Save failed — is the dev server running?";
   }
-}
-
-// Position-independent signature of a drawn map: its bounding-box crop. An empty
-// (all-wall) grid yields "" and is never saved.
-function mapSignature(grid: number[][]): string {
-  if (grid.every((row) => row.every((v) => v === 0))) return "";
-  const { r0, r1, c0, c1 } = boundingBox(grid);
-  const cropped: number[][] = [];
-  for (let r = r0; r <= r1; r++) cropped.push(grid[r].slice(c0, c1 + 1));
-  return JSON.stringify(cropped);
-}
-
-// Non-interactive terrain preview (bounding-box cropped) — the face of a card.
-function MiniMap({ grid }: { grid: number[][] }) {
-  const { r0, r1, c0, c1 } = boundingBox(grid);
-  const rs = range(r0, r1);
-  const cs = range(c0, c1);
-  return (
-    <div
-      className="mini-map"
-      style={{ gridTemplateColumns: `repeat(${cs.length}, var(--mini-cell))` }}
-    >
-      {rs.map((r) =>
-        cs.map((c) => (
-          <span key={`${r},${c}`} className={`mini-cell terrain-${grid[r][c]}`} />
-        )),
-      )}
-    </div>
-  );
 }
 
 // Dev-only About sidebar. The component is excluded from the production
@@ -397,18 +234,17 @@ function App() {
   // Dev-only: when set, the next item placed via the recorder is tagged as a
   // gopher reveal ("hit") — its keycap renders on the yellow gopher background.
   const [pickerGopher, setPickerGopher] = useState(false);
-  const [theme, setTheme] = useState<string>(loadTheme);
+  const [theme, setTheme] = useTheme();
   // About panel (dev-only) — a right-hand sidebar that scoots the app over on
   // wide screens and covers it on narrow ones, rather than replacing the view.
   const [aboutOpen, setAboutOpen] = useState(false);
   const [error, setError] = useState("");
-  // Saved maps (terrain only) and the carousel scroll container.
-  const [savedMaps, setSavedMaps] = useState<number[][][]>(loadSavedMaps);
-  const [savedStatus, setSavedStatus] = useState("");
+  // Saved-map retention: persisted terrain, the carousel, and the save/load
+  // status line all live in the feature hook.
+  const saved = useSavedMaps();
   // Dev-only feedback for the "save saved maps to server" export (separate from
-  // savedStatus, which carries the always-on save/load feedback line).
+  // saved.status, which carries the always-on save/load feedback line).
   const [savedExportStatus, setSavedExportStatus] = useState("");
-  const cardsRef = useRef<HTMLDivElement>(null);
 
   // Click-and-drag soil painting (input mode): drag from the start cell to the
   // current cell to fill that rectangle with soil. `dragged` suppresses the
@@ -429,29 +265,12 @@ function App() {
     { w: number; h: number; x: number; y: number; transform: string } | null
   >(null);
 
-  // Apply + persist the chosen theme (palette lives in index.css [data-theme]).
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    try {
-      localStorage.setItem(THEME_KEY, theme);
-    } catch {
-      /* file:// origin may block localStorage — theme just won't persist */
-    }
-  }, [theme]);
-
   // Scoot the page over (CSS `body.about-open`) while the About sidebar is open;
   // on narrow screens the sidebar is full-width, so the app is pushed off-view.
   useEffect(() => {
     document.body.classList.toggle("about-open", aboutOpen);
     return () => document.body.classList.remove("about-open");
   }, [aboutOpen]);
-
-  // Auto-dismiss the save/load status line after ~5s.
-  useEffect(() => {
-    if (!savedStatus) return;
-    const id = setTimeout(() => setSavedStatus(""), 5000);
-    return () => clearTimeout(id);
-  }, [savedStatus]);
 
   // End any drag-paint when the mouse is released. `mouseup` covers releases
   // over the document; the `mousemove` no-buttons check catches a release that
@@ -646,7 +465,7 @@ function App() {
     // (every piece already found, just clearing a mis-declared one).
     if (!repick && total === 0) return setError("Add at least one item (count > 0).");
     setError("");
-    saveCurrentMap(true); // auto-save the map (silently) on Calculate
+    saved.save(grid, true); // auto-save the map (silently) on Calculate
     if (repick) {
       // Re-pick: keep every found piece, re-index it into the new inventory
       // (found + newly-declared hidden), and re-solve against the kept digs.
@@ -789,60 +608,20 @@ function App() {
     closePicker();
   }
 
-  // Save the current map's terrain (no item count) if it's non-empty and not a
-  // duplicate of one already stored. `silent` suppresses the status line — used
-  // by the auto-save on Calculate.
-  function saveCurrentMap(silent = false) {
-    const sig = mapSignature(grid);
-    if (!sig) return silent || setSavedStatus("Draw a map first.");
-    if (savedMaps.some((m) => mapSignature(m) === sig)) {
-      return silent || setSavedStatus("Map already saved.");
-    }
-    const next = [...savedMaps, grid.map((row) => [...row])];
-    setSavedMaps(next);
-    persistSavedMaps(next);
-    if (!silent) setSavedStatus("Map saved.");
-  }
-
-  function deleteSavedMap(i: number) {
-    const next = savedMaps.filter((_, ix) => ix !== i);
-    setSavedMaps(next);
-    persistSavedMaps(next);
-    setSavedStatus("");
-  }
-
   // Load a saved map's terrain only — no session, no item count. The shape is
   // re-centred on the grid (nicer than wherever it happened to be drawn). Stays
-  // in input mode so the user can adjust the map and add items.
+  // in input mode so the user can adjust the map and add items. Wires the
+  // saved-maps → session seam the feature hook intentionally doesn't own.
   function loadSavedMap(m: number[][]) {
     setGrid(centerGrid(m));
     resetToInput();
-    setSavedStatus("");
+    saved.setStatus("");
   }
-
-  // Scroll the card strip by one viewport (≈ three cards).
-  function scrollCards(dir: number) {
-    const el = cardsRef.current;
-    if (el) el.scrollBy({ left: dir * el.clientWidth, behavior: "smooth" });
-  }
-
-  // Track whether the carousel is scrolled to either end, to disable the arrows.
-  const [cardEnds, setCardEnds] = useState({ atStart: true, atEnd: false });
-  function updateCardEnds() {
-    const el = cardsRef.current;
-    if (!el) return;
-    setCardEnds({
-      atStart: el.scrollLeft <= 1,
-      atEnd: el.scrollLeft + el.clientWidth >= el.scrollWidth - 1,
-    });
-  }
-  // Recompute on mount and whenever the saved-map set changes (it affects width).
-  useEffect(updateCardEnds, [savedMaps]);
 
   // Dev-only: write all saved maps (terrain grids) to captures/ on disk via the
-  // dev server, as a portable backup of the SAVED_MAPS_KEY localStorage entry.
+  // dev server, as a portable backup of the saved-maps localStorage entry.
   async function exportSavedMaps() {
-    setSavedExportStatus(await saveCapture("saved-maps", savedMaps));
+    setSavedExportStatus(await saveCapture("saved-maps", saved.maps));
   }
 
   // Dev-only: serialize the current map + full recorded state (incl. the gopher
@@ -880,18 +659,7 @@ function App() {
           single-file build, where only the solver ships. */}
       {import.meta.env.DEV && aboutOpen && <About onClose={() => setAboutOpen(false)} />}
 
-      <div className="theme-bar">
-        <span>Theme:</span>
-        {THEMES.map((t) => (
-          <button
-            key={t.id}
-            className={"theme-btn" + (theme === t.id ? " active" : "")}
-            onClick={() => setTheme(t.id)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <ThemeSwitcher theme={theme} onChange={setTheme} />
 
       <div className="layout">
         <section>
@@ -1023,70 +791,34 @@ function App() {
             <>
               <div className="map-actions">
                 <button onClick={clearMap}>Reset map</button>
-                <button onClick={() => saveCurrentMap()}>Save map</button>
+                <button onClick={() => saved.save(grid)}>Save map</button>
               </div>
-              {savedStatus && <p className="hint save-status">{savedStatus}</p>}
+              {saved.status && <p className="hint save-status">{saved.status}</p>}
             </>
           )}
 
           {/* Saved maps: click a card to load its terrain only (no session, no
-              item count). Carousel shows three mini-map cards at a time. */}
-          {!locked && savedMaps.length > 0 && (
-            <div className="saved-maps">
-              <span>Saved maps:</span>
-              <div className="map-carousel">
-                {savedMaps.length > 3 && (
-                  <button
-                    className="carousel-btn"
-                    onClick={() => scrollCards(-1)}
-                    disabled={cardEnds.atStart}
-                    aria-label="previous saved maps"
-                  >
-                    ‹
-                  </button>
-                )}
-                <div className="map-cards" ref={cardsRef} onScroll={updateCardEnds}>
-                  {savedMaps.map((m, i) => (
-                    <div className="map-card" key={i}>
-                      <button
-                        className="card-remove"
-                        onClick={() => deleteSavedMap(i)}
-                        aria-label={`delete saved map ${i + 1}`}
-                      >
-                        ✕
-                      </button>
-                      <button
-                        className="card-load"
-                        onClick={() => loadSavedMap(m)}
-                        aria-label={`load saved map ${i + 1}`}
-                      >
-                        <MiniMap grid={m} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                {savedMaps.length > 3 && (
-                  <button
-                    className="carousel-btn"
-                    onClick={() => scrollCards(1)}
-                    disabled={cardEnds.atEnd}
-                    aria-label="next saved maps"
-                  >
-                    ›
-                  </button>
-                )}
-              </div>
-              {/* Dev-only: write the saved maps to captures/ on disk. Dropped
-                  from production (pure-HTML) builds via the DEV guard. */}
-              {import.meta.env.DEV && (
-                <div className="saved-maps-actions">
-                  <button onClick={exportSavedMaps}>💾 Export saved maps</button>
-                  {savedExportStatus && (
-                    <span className="hint">{savedExportStatus}</span>
-                  )}
-                </div>
-              )}
-            </div>
+              item count). Renders nothing when there are none saved. */}
+          {!locked && (
+            <SavedMaps
+              maps={saved.maps}
+              cardsRef={saved.cardsRef}
+              cardEnds={saved.cardEnds}
+              onScroll={saved.updateCardEnds}
+              onScrollBy={saved.scrollBy}
+              onDelete={saved.remove}
+              onLoad={loadSavedMap}
+              footerSlot={
+                // Dev-only: write the saved maps to captures/ on disk. Dropped
+                // from production builds via the DEV guard. Moves to dev/ later.
+                import.meta.env.DEV ? (
+                  <div className="saved-maps-actions">
+                    <button onClick={exportSavedMaps}>💾 Export saved maps</button>
+                    {savedExportStatus && <span className="hint">{savedExportStatus}</span>}
+                  </div>
+                ) : undefined
+              }
+            />
           )}
         </section>
 

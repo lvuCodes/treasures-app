@@ -1,0 +1,146 @@
+/* Saved-maps carousel of mini-map cards. Consumes the shared palette tokens
+   (--panel, --border, --accent, terrain colours) so it restyles per theme. */
+
+.saved-maps {
+  margin: 16px auto 0;
+  /* fill the input-map panel so the carousel shows as many cards as fit on wide
+     screens, instead of staying capped at the grid's width */
+  max-width: 100%;
+  min-width: 0;
+  font-size: 0.85rem;
+  color: var(--text);
+  --mini-cell: 7px;
+
+  & > span {
+    display: block;
+    margin-bottom: 6px;
+    text-align: center;
+    color: var(--text-h);
+  }
+}
+
+.map-carousel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  /* allow the inner .map-cards scroller to shrink, not overflow */
+  min-width: 0;
+
+  .carousel-btn {
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    font-size: 1.2rem;
+    line-height: 1;
+    border: 1px solid var(--accent-edge);
+    border-radius: 6px;
+    background: var(--accent);
+    color: var(--on-accent);
+    cursor: pointer;
+
+    &:hover {
+      filter: brightness(1.08);
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: default;
+      filter: none;
+    }
+  }
+}
+
+.map-cards {
+  display: flex;
+  gap: 8px;
+  /* fill the carousel (minus the arrows), scrolling once cards exceed the width */
+  flex: 1 1 0;
+  min-width: 0;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  padding-bottom: 4px;
+}
+
+.map-card {
+  position: relative;
+  flex: 0 0 104px;
+  /* height comes from the flex row stretching every card to the tallest map's
+     natural height — uniform but no taller than the content needs */
+  scroll-snap-align: start;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel);
+
+  /* highlight the whole card via its border on hover */
+  &:hover {
+    border-color: var(--accent);
+  }
+
+  .card-load {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    overflow: hidden;
+  }
+
+  .card-remove {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 12px;
+    height: 12px;
+    padding: 0;
+    margin: 2px;
+    font-size: 0.42rem;
+    line-height: 1;
+    border: none;
+    border-radius: 50%;
+    background: var(--rock);
+    color: var(--text-h);
+    cursor: pointer;
+    opacity: 0.6;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+.mini-map {
+  display: grid;
+  gap: 1px;
+}
+
+.mini-cell {
+  width: var(--mini-cell);
+  height: var(--mini-cell);
+  background: var(--wall);
+  border-radius: 1px;
+
+  &.terrain-1 {
+    background: var(--soil);
+  }
+
+  &.terrain-2 {
+    background: var(--rock);
+  }
+}
+
+/* Save/load feedback, on its own line centred under the map action buttons. */
+.save-status {
+  margin-top: 6px;
+  text-align: center;
+}

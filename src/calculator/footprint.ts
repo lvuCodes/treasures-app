@@ -31,6 +31,43 @@ const LINE_GLYPH: Record<string, { axis: "h" | "v"; pos: Pos }> = {
   "↕️": { axis: "v", pos: "mid" }, // emoji-presentation alias
 };
 
+// Forward glyph tables (position → glyph) — the inverse of BOX_GLYPH / LINE_GLYPH
+// above. partGlyphForFootprint uses these to label a cell dug out of a located
+// footprint with the matching part glyph. Forward and inverse must agree; the
+// round-trip (footprint → glyph → inferFootprints back to the footprint) is
+// asserted in footprint.test.ts so the two directions can't drift.
+const LINE_H: Record<Pos, string> = { start: "⬅️", mid: "↔️", end: "➡️" };
+const LINE_V: Record<Pos, string> = { start: "⬆️", mid: "↕️", end: "⬇️" };
+const BOX_GLYPHS: Record<string, string> = {
+  "start,start": "╔", "start,mid": "╦", "start,end": "╗",
+  "mid,start": "╠", "mid,mid": "╬", "mid,end": "╣",
+  "end,start": "╚", "end,mid": "╩", "end,end": "╝",
+};
+
+// The positional part glyph for cell (r,c) within a located item's footprint,
+// given the footprint's occupied cell keys ("r,c") and the item's dims. A 1×1
+// item has no part glyph. A 1-wide item reads its position along whichever axis
+// the footprint spans; a multi-wide item reads both axes into a box glyph.
+export function partGlyphForFootprint(
+  r: number,
+  c: number,
+  cellKeys: string[],
+  long: number,
+  short: number,
+): string | undefined {
+  if (long === 1 && short === 1) return undefined;
+  const cells = cellKeys.map((k) => k.split(",").map(Number));
+  const rs = cells.map((x) => x[0]);
+  const cs = cells.map((x) => x[1]);
+  const r0 = Math.min(...rs), r1 = Math.max(...rs);
+  const c0 = Math.min(...cs), c1 = Math.max(...cs);
+  const at = (i: number, lo: number, hi: number): Pos => (i === lo ? "start" : i === hi ? "end" : "mid");
+  if (short === 1) {
+    return c1 > c0 ? LINE_H[at(c, c0, c1)] : LINE_V[at(r, r0, r1)];
+  }
+  return BOX_GLYPHS[`${at(r, r0, r1)},${at(c, c0, c1)}`];
+}
+
 export interface FootprintCell {
   row: number;
   col: number;
@@ -185,12 +222,12 @@ export function itemFootprints(
 export function deriveConfirmedState(
   grid: Cell[][],
   dimsByIndex: Map<number, { long: number; short: number }>,
-  // Cell keys ("r,c") a gopher has touched. A gopher reveal can mark a cell
-  // empty (dug=0) and only later turn out to host an item — the documented
-  // "log an item on a gopher-emptied cell" flow. So an item's footprint may
-  // span a gopher-revealed-empty cell here, where an ordinary revealed-empty
-  // cell still blocks it. Scoped to this overlay/located inference; the
-  // dig-recommendation solver keeps treating revealed cells as non-placeable.
+  // Cell keys ("r,c") that remain passable for footprint inference even when
+  // recorded empty (dug=0) — a revealed-empty cell that may still host an item.
+  // So an item's footprint may span such a cell here, where an ordinary
+  // revealed-empty cell still blocks it. Scoped to this located-footprint
+  // inference; the dig-recommendation solver keeps treating revealed cells as
+  // non-placeable. The core does not interpret why a cell is passable.
   passable: Set<string> = new Set(),
 ): { grid: Cell[][]; located: Set<number> } {
   const out = grid.map((row) => row.map((cell) => ({ ...cell })));
