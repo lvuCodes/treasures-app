@@ -41,25 +41,37 @@ npm run build:singlefile  # Build, then inline JS/CSS into treasures-app.html
 
 ## Project Structure
 
+Organized by feature/domain, with a feature-agnostic core underneath. `App.tsx` is a thin composition shell that wires the hooks + features together. Each feature folder is a drop-in with its own barrel `index.ts`, colocated CSS, and (where it holds logic) co-located tests; several carry a `README.md`.
+
 ```
 src/
-  App.tsx              # Full UI — grid, item table, picker, themes, solve loop
-  App.css              # App styles (themes, grid, picker, footer)
+  App.tsx              # Composition shell — wires the hooks + features
+  App.css              # Shell layout + shared cell/grid substrate
   index.css            # Theme variables / base styles
   main.tsx             # React entry point
-  calculator/
-    solver.ts          # Placement engine — per-cell probability scores
-    cell-state.ts      # Grid cell-state model and conversions
-    footprint.ts       # Item footprint geometry and confirmed-state derivation
-    elimination.ts     # Prunes impossible placements as cells are recorded
-    session.ts         # Solve-session orchestration consumed by the UI
-    walkthrough.ts     # Replays recorded walkthroughs (test support)
-    *.test.ts          # Vitest suites (solver, footprint, elimination, session, walkthrough)
-    fixtures/          # Test fixtures (maps + extracted level data)
+
+  # ---- core (feature-agnostic) ----
+  grid/                # Pure board geometry (crop, re-centre, signature)
+  calculator/          # Pure decision engine (solver, footprint, elimination, session, …)
+  session/             # The coupled state machine — pure reducer + useDigSession hook
+
+  # ---- features / cohesion modules ----
+  theme/               # Terminal themes (palette + useTheme + switcher)
+  map-input/           # Editable input grid (click-cycle + drag-paint)
+  map-display/         # Solve-mode board + legend (+ overlay slot)
+  inventory/           # Item catalog + status table + steppers
+  recorder/            # Right-click item/part picker modal
+  saved-maps/          # Persisted map carousel
+
+  # ---- the one release-detachable feature (dropped from prod) ----
+  dev/                 # gopher / capture / about — behind import.meta.env.DEV
+
 scripts/
-  build-singlefile.mjs # Inlines the Vite build into one HTML file
+  build-singlefile.mjs # Inlines the Vite build into one HTML file (+ subset-release guard)
 public/                # favicon + icons
 ```
+
+The boundaries are real: deleting a feature is removing its folder plus its import/registration lines, no core edits. The build-time subset boundary is `dev/` — it is tree-shaken out of the production bundle (enforced by the single-file build's dev-sentinel guard).
 
 ## Algorithm
 
@@ -68,7 +80,7 @@ For each item — expanded by count, considering both orientations — the solve
 ## Build and Delivery
 
 - **Development**: React + Vite + TypeScript.
-- **Delivery**: `npm run build:singlefile` produces `dist/`, then inlines the JS and CSS into `treasures-app.html` at the project root — a single dependency-free file that runs by double-click over `file://`.
+- **Delivery**: `npm run build:singlefile` produces `dist/`, then inlines the JS and CSS into `treasures-app.html` at the project root — a single self-contained file (no server, no separate assets) that runs by double-click over `file://`. It still bundles the React runtime; it is "single-file", not vanilla JS. The file is generated locally and gitignored, not committed. The build fails if any dev-only code leaks into it.
 
 ## Sources
 

@@ -1,0 +1,22 @@
+/* Dev-only gopher styling. Dropped from the production bundle with the gopher
+   components that import this file. */
+
+/* A gopher-logged cell sits on a fixed gold background, independent of theme —
+   flags the reveal as gopher-sourced. */
+.cell.gopher {
+  background: #e0b000;
+}
+
+/* Gopher logging row in the recorder — set off from the standard controls. */
+.gopher-foot {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+
+  /* Gopher-item toggle in its armed state — gold to match the cell background. */
+  button.active {
+    background: #e0b000;
+    border-color: #e0b000;
+    color: #1a1a1a;
+  }
+}

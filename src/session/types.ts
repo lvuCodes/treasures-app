@@ -18,7 +18,7 @@ export interface SessionState {
   // "r,c" → part glyph (which part of an item sits here).
   parts: Map<string, string>;
   // "r,c" → opaque overlay tag. The core never interprets the string; a feature
-  // (e.g. dev gopher tooling) stamps and reads its own semantics. A tagged cell
+  // (e.g. a dev overlay tool) stamps and reads its own semantics. A tagged cell
   // stays passable for located-footprint inference (see evaluate's passableCells).
   overlay: Map<string, string>;
   history: HistoryEntry[];

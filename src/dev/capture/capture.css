@@ -1,0 +1,43 @@
+/* Dev-only capture export buttons. Dropped from the production bundle with the
+   components that import this file. */
+
+/* "Export saved maps" button, centred under the carousel with its status
+   stacked underneath. */
+.saved-maps-actions {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+
+  .hint {
+    text-align: center;
+  }
+
+  button {
+    border: 1px solid var(--border);
+    background: var(--code-bg);
+    color: var(--text-h);
+    border-radius: 6px;
+    padding: 5px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-family: var(--sans);
+
+    &:hover {
+      filter: brightness(1.12);
+    }
+  }
+}
+
+/* "Save map state" button (an .actions row) — stacked + centred. */
+.gopher-actions {
+  margin-top: 12px;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+
+  .hint {
+    text-align: center;
+  }
+}

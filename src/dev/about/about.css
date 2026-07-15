@@ -1,0 +1,73 @@
+/* Dev-only About sidebar. Dropped from the production bundle with DevAbout, which
+   imports this file.
+
+   Two modes. Narrow viewports: the sidebar spans the full width and covers the
+   app (replaces the page). Wide viewports (>= the scoot breakpoint): it shrinks
+   to a narrow-browser width and `body.about-open` reserves that space so the app
+   scoots left — forced to a single column there, since the freed space is too
+   small for the app's own (viewport-keyed) two-column layout. */
+:root {
+  --about-width: 360px;
+}
+
+.about-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 60;
+  width: 100vw; /* full-cover by default (narrow screens) */
+  height: 100vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 20px 22px; /* small margin around the text */
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.35);
+  color: var(--text);
+
+  .about-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+}
+
+body.about-open {
+  overflow-x: hidden; /* clip the covered/scooted app rather than scroll */
+}
+
+/* Wide enough that a narrow sidebar + a single-column app both fit: scoot. */
+@media (min-width: 860px) {
+  .about-sidebar {
+    width: var(--about-width);
+  }
+
+  body.about-open {
+    padding-right: var(--about-width);
+  }
+
+  /* The reserved gap is narrower than the app's two-column threshold, so collapse
+     the layout to one centred column while the sidebar is open. */
+  body.about-open .layout {
+    grid-template-columns: 1fr;
+  }
+
+  body.about-open .grid {
+    justify-content: center;
+    margin: 0 auto;
+  }
+}
+
+/* Once the freed space is wide enough for the app's two columns beside the
+   sidebar, restore the normal split instead of the collapsed single column. */
+@media (min-width: 1160px) {
+  body.about-open .layout {
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  }
+
+  body.about-open .grid {
+    justify-content: start;
+  }
+}

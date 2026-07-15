@@ -37,6 +37,32 @@ html = html.replace(
   () => `\n    <script type="module">\n${safeJs}\n    </script>`,
 );
 
+// Subset-release invariant: the dev-only feature (src/dev/) must NOT ship in the
+// production bundle. Grep the final HTML for dev sentinels — glyphs, the capture
+// endpoint, and dev CSS/UI strings that only exist under src/dev/. If any survive,
+// tree-shaking failed (a stray reference outside an import.meta.env.DEV guard, or
+// a side-effect import at the dev barrel), so fail the build loudly.
+const DEV_SENTINELS = [
+  "🐁", // initial gopher glyph
+  "🐀", // revealed gopher glyph
+  "🧀", // gopher-emptied soil glyph
+  "🪤", // gopher-cracked rock glyph
+  "/__capture", // dev capture endpoint
+  "about-sidebar", // dev About CSS class
+  "Save map state", // dev capture button
+  "Export saved maps", // dev capture button
+  "Initial gopher", // dev gopher button
+];
+const leaked = DEV_SENTINELS.filter((s) => html.includes(s));
+if (leaked.length) {
+  throw new Error(
+    `Dev-only code leaked into the production bundle: ${leaked.join(", ")}.\n` +
+      "The src/dev/ folder must be tree-shaken out — check that every dev reference " +
+      "sits behind an import.meta.env.DEV guard and that the dev barrel has no " +
+      "side-effect (CSS) imports.",
+  );
+}
+
 const out = join(root, "treasures-app.html");
 writeFileSync(out, html);
-console.log(`Wrote ${out} (${(html.length / 1024).toFixed(1)} kB)`);
+console.log(`Wrote ${out} (${(html.length / 1024).toFixed(1)} kB) — no dev sentinels`);

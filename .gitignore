@@ -15,6 +15,10 @@ dist-ssr
 # Dev-only exports written by the capture endpoint (vite.config.ts)
 captures
 
+# Generated single-file distribution (build:singlefile) — regenerate locally,
+# not committed
+treasures-app.html
+
 # Lock files
 ~$*
 package-lock.json
