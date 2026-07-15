@@ -53,5 +53,9 @@ export default defineConfig({
     // Provide an in-memory localStorage for every test (see the setup file).
     // Test files opt into jsdom per-file via `// @vitest-environment jsdom`.
     setupFiles: ['./src/test-setup.ts'],
+    coverage: {
+      provider: 'v8',
+      thresholds: { statements: 81, branches: 68, functions: 77, lines: 83 },
+    },
   },
 })
