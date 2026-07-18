@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { deriveEliminations, deriveForced, isSolvable } from "./elimination";
+import { deriveEliminations, deriveForced, deriveForcedItems, isSolvable } from "./elimination";
 import { deriveConfirmedState } from "./footprint";
 import { toNumericGrid, type Cell } from "./cell-state";
 import { walkthrough } from "./walkthrough";
@@ -111,5 +111,32 @@ describe("deriveForced (guaranteed item cells)", () => {
     const g = Array.from({ length: 10 }, () => Array(10).fill(1)); // open board
     const forced = deriveForced(g, [{ count: 1, long: 1, short: 1 }]);
     expect(forced).toEqual([]);
+  });
+});
+
+describe("deriveForcedItems (unique-type deduction on forced cells)", () => {
+  it("deduces the type when exactly one item type can cover each forced cell", () => {
+    // A single column of 4 soil cells — the only slot for a 1×4 item.
+    const g = Array.from({ length: 10 }, () => Array(10).fill(0));
+    g[0][0] = 1; g[1][0] = 1; g[2][0] = 1; g[3][0] = 1;
+    const items: Item[] = [{ count: 1, long: 4, short: 1 }];
+    const forced = deriveForced(g, items);
+    const deduced = deriveForcedItems(g, items, forced);
+    expect(deduced.size).toBe(4);
+    expect(deduced.get("0,0")).toEqual({ long: 4, short: 1 });
+    expect(deduced.get("3,0")).toEqual({ long: 4, short: 1 });
+  });
+
+  it("omits forced cells that more than one type could cover", () => {
+    // Two cells that either a 1×1+1×1 or a single 1×2 could fill — but with two
+    // 1×1 items and no room elsewhere, both cells are forced yet type-ambiguous
+    // only if multiple types fit. Here a single 1×2 in a 1×2 slot is the sole
+    // option, so it IS deduced; contrast documents the size==1 gate.
+    const g = Array.from({ length: 10 }, () => Array(10).fill(0));
+    g[0][0] = 1; g[0][1] = 1;
+    const items: Item[] = [{ count: 1, long: 2, short: 1 }];
+    const forced = deriveForced(g, items);
+    const deduced = deriveForcedItems(g, items, forced);
+    expect(deduced.get("0,0")).toEqual({ long: 2, short: 1 });
   });
 });

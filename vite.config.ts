@@ -55,7 +55,11 @@ export default defineConfig({
     setupFiles: ['./src/test-setup.ts'],
     coverage: {
       provider: 'v8',
-      thresholds: { statements: 81, branches: 68, functions: 77, lines: 83 },
+      all: true,
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/**/*.test.{ts,tsx}', 'src/main.tsx'],
+      reporter: ['text', 'html'],
+      thresholds: { statements: 91, branches: 80, functions: 88, lines: 93 },
     },
   },
 })
