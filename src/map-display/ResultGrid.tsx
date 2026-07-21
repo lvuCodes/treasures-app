@@ -1,4 +1,4 @@
-import type { MouseEvent, ReactNode } from "react";
+import type { CSSProperties, MouseEvent, ReactNode } from "react";
 import { boundingBox, range } from "../grid";
 import { cellKey, type DigCode, type Evaluation } from "../calculator/session";
 import { FORCED_COLOR, KEYCAPS, itemColor } from "../inventory";
@@ -63,7 +63,7 @@ export function ResultGrid({
         className="grid"
         role="grid"
         aria-label="map"
-        style={{ gridTemplateColumns: `repeat(${cols.length}, 40px)` }}
+        style={{ "--cols": cols.length } as CSSProperties}
       >
         {rows.map((r) =>
           cols.map((c) => {

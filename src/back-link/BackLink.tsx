@@ -4,7 +4,7 @@ import "./back-link.css";
 // (the shell is the positioned ancestor) so it never displaces the header.
 export function BackLink({
   href = "https://lvucodes.github.io",
-  label = "← Home",
+  label = "← lvuCodes",
 }: {
   href?: string;
   label?: string;

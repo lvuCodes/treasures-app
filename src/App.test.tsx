@@ -7,6 +7,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import App from "./App";
+import { SIZE } from "./grid";
 
 afterEach(() => {
   cleanup();
@@ -146,5 +147,20 @@ describe("footer copyright", () => {
     expect(screen.getByRole("link", { name: "lvuCodes" }).getAttribute("href")).toBe(
       "https://github.com/lvuCodes",
     );
+  });
+});
+
+describe("responsive grid", () => {
+  const map = () => screen.getByRole("grid", { name: "map" });
+
+  it("publishes the input grid's column count for the shrinkable track sizing", () => {
+    render(<App />);
+    expect(map().style.getPropertyValue("--cols")).toBe(String(SIZE));
+  });
+
+  it("publishes the result grid's bounding-box width", () => {
+    render(<App />);
+    calculateSquare();
+    expect(map().style.getPropertyValue("--cols")).toBe("2");
   });
 });

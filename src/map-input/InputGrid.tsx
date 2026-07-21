@@ -1,4 +1,4 @@
-import type { MouseEvent } from "react";
+import type { CSSProperties, MouseEvent } from "react";
 import { SIZE, range } from "../grid";
 import { cellKey } from "../calculator/session";
 import type { DragSize } from "./useMapPaint";
@@ -30,7 +30,7 @@ export function InputGrid({ grid, paintDown, paintEnter, cellClick, dragSize }: 
         className="grid"
         role="grid"
         aria-label="map"
-        style={{ gridTemplateColumns: `repeat(${SIZE}, 40px)` }}
+        style={{ "--cols": SIZE } as CSSProperties}
       >
         {cells.map((r) =>
           cells.map((c) => {

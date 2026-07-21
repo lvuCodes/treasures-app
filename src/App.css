@@ -1,6 +1,13 @@
 .app {
+  /* The back link is pinned to the shell's padding-box top, so header spacing
+     has to be padding here rather than a margin on .header-bar — a margin there
+     collapses through the shell and drags the back link down with it. */
+  --shell-top: 24px;
+  --header-top: 36px;
+
   width: min(1120px, calc(100% - 32px));
-  margin: 24px auto;
+  margin: var(--shell-top) auto;
+  padding-top: calc(var(--header-top) - var(--shell-top));
   font-family: var(--sans);
   text-align: left;
   color: var(--text-h);
@@ -11,6 +18,8 @@
 
 .app h1 {
   font-size: 1.6rem;
+  margin-block: 0;
+  margin: 12px auto;
 }
 
 /* The About sidebar is styled in about/about.css, the back link in
@@ -26,7 +35,6 @@
   text-align: center;
   /* reserve two lines so the map grid and item table start at the same
      vertical position regardless of how each hint wraps */
-  min-height: 2.6rem;
 }
 
 .layout {
@@ -57,24 +65,31 @@
 }
 
 /* ---- grid ---- */
+/* --cols is set inline by the grid components (SIZE for input, bounding-box
+   width for results). Tracks cap at --cell-max but may shrink below it, so the
+   whole map stays on screen at any viewport width. */
 .grid {
+  --cols: 1;
+  --cell-max: 40px;
+  --grid-gap: 3px;
   display: grid;
-  width: max-content;
-  max-width: 100%;
-  justify-content: start;
+  grid-template-columns: repeat(var(--cols), minmax(0, var(--cell-max)));
+  width: 100%;
+  max-width: calc(var(--cols) * var(--cell-max) + (var(--cols) - 1) * var(--grid-gap) + 8px);
+  justify-content: center;
   align-self: start;
-  gap: 3px;
+  gap: var(--grid-gap);
   background: var(--panel);
-  padding: 3px;
+  padding: var(--grid-gap);
   border-radius: 4px;
   border: 1px solid var(--border);
   box-sizing: border-box;
 }
 
 .cell {
-  width: 40px;
-  height: 40px;
-  font-size: 20px;
+  width: 100%;
+  aspect-ratio: 1;
+  font-size: clamp(11px, 3.2vw, 20px);
   line-height: 1;
   border: none;
   border-radius: 4px;
@@ -119,19 +134,13 @@ button.cell:hover {
    in inventory.css. */
 @media (max-width: 900px) {
   .app {
-    width: min(100%, calc(100% - 16px));
-    margin: 12px auto;
+    --shell-top: 12px;
+
+    width: min(100%, calc(100% - 32px));
   }
 
   .layout {
     grid-template-columns: 1fr;
-  }
-
-  .grid {
-    width: max-content;
-    max-width: 100%;
-    justify-content: center;
-    margin: 0 auto;
   }
 }
 
