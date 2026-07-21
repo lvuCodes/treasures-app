@@ -79,7 +79,7 @@
   }
 }
 
-/* The only class the markup still needs: the same pill serves as the footer
+/* The only class the markup still needs: the same pill serves as the page
    toggle and the sidebar's close button. The child combinator keeps the
    centring off the close button, which is nested inside the sidebar. */
 .about-link {
@@ -93,7 +93,7 @@
   white-space: nowrap;
 }
 
-.credits > .about-link {
+.app > .about-link {
   display: block;
   margin: 0 auto 16px;
 }
