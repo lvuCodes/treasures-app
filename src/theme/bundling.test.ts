@@ -1,6 +1,5 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import pkg from "../../package.json";
 
 // Regression guard: a `sideEffects` allowlist in package.json made Rollup drop
 // `import "./themes.css"` from the theme barrel, so the production bundle
@@ -8,11 +7,8 @@ import { describe, expect, it } from "vitest";
 // Vite/Rollup does not honour sideEffects globs for the app's own source, so the
 // field must stay absent (or `true`) — never a glob list.
 describe("package.json sideEffects", () => {
-  const pkg = JSON.parse(
-    readFileSync(resolve(__dirname, "../../package.json"), "utf8"),
-  ) as { sideEffects?: unknown };
-
   it("does not narrow side effects to a glob allowlist", () => {
-    expect(pkg.sideEffects === undefined || pkg.sideEffects === true).toBe(true);
+    const sideEffects = (pkg as { sideEffects?: unknown }).sideEffects;
+    expect(sideEffects === undefined || sideEffects === true).toBe(true);
   });
 });
