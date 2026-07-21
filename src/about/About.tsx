@@ -14,7 +14,7 @@ const ABOUT_LINK: CSSProperties = {
   whiteSpace: "nowrap",
 };
 const ABOUT_HEAD: CSSProperties = { fontSize: "1.3rem", margin: 0, color: "var(--text-h)" };
-const ABOUT_SECTION: CSSProperties = { margin: "0 0 22px" };
+const ABOUT_SECTION: CSSProperties = { margin: "8px 0 12px" };
 const ABOUT_H2: CSSProperties = { fontSize: "1.1rem", margin: "0 0 6px", color: "var(--text-h)" };
 const ABOUT_P: CSSProperties = { margin: 0, color: "var(--text)", lineHeight: 1.6 };
 const ABOUT_LIST: CSSProperties = {
@@ -91,6 +91,30 @@ function AboutSidebar({ onClose }: { onClose: () => void }) {
           locally in your browser. There are no cookies, no analytics, and no
           network requests; nothing leaves your device.
         </p>
+      </section>
+      <section style={ABOUT_SECTION}>
+        <h2 style={ABOUT_H2}>Sources</h2>
+        <p className="credits-note">
+          The dig-optimization approach was informed by these battleship probability solvers:
+        </p>
+        <ul className="credits-list">
+          <li>
+            <a href="https://cliambrown.com/battleship/" target="_blank" rel="noreferrer noopener">
+              C. Liam Brown — Battleship Probability Calculator
+            </a>{" "}
+            (<a href="https://cliambrown.com/battleship/methodology.php" target="_blank" rel="noreferrer noopener">methodology</a>)
+          </li>
+          <li>
+            <a href="https://www.noq.solutions/battleship" target="_blank" rel="noreferrer noopener">
+              Noq — Battleship solver
+            </a>
+          </li>
+          <li>
+            <a href="https://nulliq.dev/posts/battleship/" target="_blank" rel="noreferrer noopener">
+              nulliq — Battleship
+            </a>
+          </li>
+        </ul>
       </section>
     </aside>
   );

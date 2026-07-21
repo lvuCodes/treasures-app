@@ -178,7 +178,7 @@ function App() {
         <h1>Treasures Dig Optimizer</h1>
       </div>
 
-      <ThemeSwitcher theme={theme} onChange={setTheme} />
+      <About />
 
       <div className="layout">
         <section>
@@ -386,29 +386,8 @@ function App() {
       )}
 
       <footer className="credits">
-        <About />
-        <p className="credits-title">Sources</p>
-        <p className="credits-note">
-          The dig-optimization approach was informed by these battleship probability solvers:
-        </p>
-        <ul className="credits-list">
-          <li>
-            <a href="https://cliambrown.com/battleship/" target="_blank" rel="noreferrer noopener">
-              C. Liam Brown — Battleship Probability Calculator
-            </a>{" "}
-            (<a href="https://cliambrown.com/battleship/methodology.php" target="_blank" rel="noreferrer noopener">methodology</a>)
-          </li>
-          <li>
-            <a href="https://www.noq.solutions/battleship" target="_blank" rel="noreferrer noopener">
-              Noq — Battleship solver
-            </a>
-          </li>
-          <li>
-            <a href="https://nulliq.dev/posts/battleship/" target="_blank" rel="noreferrer noopener">
-              nulliq — Battleship
-            </a>
-          </li>
-        </ul>
+
+        <ThemeSwitcher theme={theme} onChange={setTheme} />
 
         <p className="credits-copyright">
           © 2026{" "}

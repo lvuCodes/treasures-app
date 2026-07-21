@@ -299,9 +299,7 @@ button.cell:hover {
 }
 
 .credits-copyright {
-  margin: 20px 0 0;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
+  margin: 16px 0 0;
   text-align: center;
 }
 

@@ -14,11 +14,13 @@
   top: 0;
   right: 0;
   z-index: 60;
-  width: 100vw; /* full-cover by default (narrow screens) */
+  width: 100vw;
+  /* full-cover by default (narrow screens) */
   height: 100vh;
   overflow-y: auto;
   box-sizing: border-box;
-  padding: 20px 22px; /* small margin around the text */
+  padding: 20px 20px;
+  /* small margin around the text */
   background: var(--panel);
   border-left: 1px solid var(--border);
   box-shadow: -8px 0 24px rgba(0, 0, 0, 0.35);
@@ -36,15 +38,16 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    margin: -20px -22px 18px;
-    padding: 20px 22px 12px;
+    margin: 0 -20px;
+    padding: 0 20px 12px;
     background: var(--panel);
     border-bottom: 1px solid var(--border);
   }
 }
 
 body.about-open {
-  overflow-x: hidden; /* clip the covered/scooted app rather than scroll */
+  overflow-x: hidden;
+  /* clip the covered/scooted app rather than scroll */
 }
 
 /* Wide enough that a narrow sidebar + a single-column app both fit: scoot. */
