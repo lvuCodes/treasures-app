@@ -413,12 +413,25 @@ export function evaluate(
       kind = "unsolvable";
     } else {
       kind = "ok";
-      for (const cell of solve(workTop, remaining).top) top.add(cellKey(cell.row, cell.col));
       for (const key of joint.eliminated) eliminated.add(key);
       for (const key of joint.forced) forced.add(key);
       for (const [key, idx] of joint.forcedItem) forcedItem.set(key, idx);
       for (const idx of joint.located) located.add(idx);
       solved = joint.solvedRegion;
+
+      // Score only what is still genuinely unknown. A deduced-guaranteed cell is
+      // a certainty the board already shows, and the display gives that state
+      // precedence over the hammer — leaving it in the ranking lets it outscore
+      // every uncertain cell and silently swallow the whole recommendation. An
+      // item whose footprint is already pinned is likewise settled, so it must
+      // not keep skewing the scores of the items still being hunted.
+      const workUnknown = workTop.map((row, r) =>
+        row.map((hits, c) => (forced.has(cellKey(r, c)) ? 0 : hits)),
+      );
+      const unsettled = items
+        .filter((_, i) => !found.has(i + 1) && !located.has(i + 1))
+        .map((d) => ({ count: 1, long: d.long, short: d.short }));
+      for (const cell of solve(workUnknown, unsettled).top) top.add(cellKey(cell.row, cell.col));
     }
   }
 

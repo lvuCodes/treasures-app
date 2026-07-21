@@ -164,3 +164,58 @@ describe("evaluate — forced-cell item deduction (capture 183208)", () => {
       for (let col = 2; col <= 4; col++) expect(r.forcedItem.get(`${row},${col}`)).toBe(2);
   });
 });
+
+describe("evaluate — recommendation excludes settled cells and items", () => {
+  // Regression: the deployed board below rendered with no hammer anywhere while
+  // two 1×3 items were still unfound. A deduced 2×2 sat in the top-right corner;
+  // its four cells were `forced` but never `confirmed`, so they stayed live in
+  // the recommendation grid, scored highest (they are guaranteed item cells),
+  // and took the entire top set. The display gives `forced` precedence over the
+  // hammer, so every recommended cell rendered as a forced cell instead — the
+  // player saw zero suggestions.
+  const buildBoard = () => {
+    const grid = Array.from({ length: 10 }, () => Array(10).fill(0));
+    const layout = [
+      [3, [1, 1, 1, 1, 1, 1, 1]],
+      [4, [0, 1, 1, 1, 0, 1, 1]],
+      [5, [1, 0, 1, 0, 1, 0, 1]],
+      [6, [1, 1, 0, 1, 1, 1, 0]],
+      [7, [1, 1, 1, 1, 1, 1, 1]],
+    ] as const;
+    for (const [r, cells] of layout) cells.forEach((v, i) => (grid[r][i + 1] = v));
+    const dug = new Map<string, DigCode>([
+      ["3,3", 0],
+      ["7,1", 0],
+      ["7,5", 0],
+    ]);
+    const items: ItemDims[] = [
+      { long: 3, short: 1 },
+      { long: 3, short: 1 },
+      { long: 2, short: 2 },
+    ];
+    return { grid, dug, items };
+  };
+
+  it("recommends the undetermined cells, not the deduced footprint", () => {
+    const { grid, dug, items } = buildBoard();
+    const r = evaluate(grid, dug, new Map(), items);
+
+    expect(r.kind).toBe("ok");
+    // The 2×2 is deduced into the corner and every one of its cells is forced.
+    expect(r.located.has(3)).toBe(true);
+    expect([...r.forced].sort()).toEqual(["3,6", "3,7", "4,6", "4,7"]);
+
+    // The recommendation must be non-empty and must avoid the forced footprint,
+    // whose cells the board already renders as a known item.
+    expect(r.top.size).toBeGreaterThan(0);
+    for (const key of r.forced) expect(r.top.has(key)).toBe(false);
+
+    // Only the three runs that can still host a 1×3 are candidates.
+    const runs = new Set([
+      "4,2", "4,3", "4,4",
+      "6,4", "6,5", "6,6",
+      "7,2", "7,3", "7,4",
+    ]);
+    for (const key of r.top) expect(runs.has(key)).toBe(true);
+  });
+});
