@@ -1,5 +1,4 @@
-/* Dev-only About sidebar. Dropped from the production bundle with DevAbout, which
-   imports this file.
+/* About sidebar. Imported by the About component that owns it.
 
    Two modes. Narrow viewports: the sidebar spans the full width and covers the
    app (replaces the page). Wide viewports (>= the scoot breakpoint): it shrinks
@@ -25,12 +24,22 @@
   box-shadow: -8px 0 24px rgba(0, 0, 0, 0.35);
   color: var(--text);
 
+  /* Pinned to the top of the scrolling sidebar so the title and the close
+     button stay reachable. Negative margins bleed it across the sidebar's own
+     padding, so the sections scroll under a full-width bar rather than through
+     a transparent gutter beside it. */
   .about-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    margin-bottom: 18px;
+    margin: -20px -22px 18px;
+    padding: 20px 22px 12px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
   }
 }
 
