@@ -6,6 +6,7 @@
   color: var(--text-h);
   box-sizing: border-box;
   caret-color: transparent;
+  position: relative;
 }
 
 .app h1 {
@@ -314,6 +315,27 @@ button.cell:hover {
 }
 
 /* ---- header bar (title + About link) ---- */
+.back-nav {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.back-link {
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+  color: var(--text-h);
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 0.9rem;
+  font-family: var(--sans);
+  text-decoration: none;
+}
+
+.back-link:hover {
+  filter: brightness(1.12);
+}
+
 .header-bar {
   display: flex;
   align-items: baseline;

@@ -174,6 +174,12 @@ function App() {
 
   return (
     <main className="app">
+      <nav className="back-nav">
+        <a className="back-link" href="https://lvucodes.github.io">
+          ← Home
+        </a>
+      </nav>
+
       <div className="header-bar">
         <h1>Treasures Dig Optimizer</h1>
       </div>
