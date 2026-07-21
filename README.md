@@ -74,7 +74,7 @@ src/
 
 scripts/
   build-singlefile.mjs # Inlines the Vite build into one HTML file (+ subset-release guard)
-public/                # logo, favicons + icons
+public/                # favicon + icons
 ```
 
 The boundaries are real: deleting a feature is removing its folder plus its import/registration lines, no core edits. The build-time subset boundary is `dev/` — it is tree-shaken out of the production bundle (enforced by the single-file build's dev-sentinel guard).

@@ -411,7 +411,6 @@ function App() {
         </ul>
 
         <p className="credits-copyright">
-          <img className="credits-logo" src="./logo.png" alt="" width={20} height={20} />
           © 2026{" "}
           <a href="https://github.com/lvuCodes" target="_blank" rel="noreferrer noopener">
             lvuCodes
