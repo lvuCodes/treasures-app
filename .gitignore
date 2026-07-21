@@ -22,7 +22,6 @@ treasures-app.html
 
 # Lock files
 ~$*
-package-lock.json
 
 # Editor directories and files
 .vscode/*
