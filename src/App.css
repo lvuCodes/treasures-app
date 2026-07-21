@@ -5,6 +5,7 @@
   text-align: left;
   color: var(--text-h);
   box-sizing: border-box;
+  caret-color: transparent;
 }
 
 .app h1 {
@@ -322,5 +323,5 @@ button.cell:hover {
 }
 
 /* The About link and page are dev-only and excluded from the production
-   single-file build, so their styles live inline in the component (not here) —
-   adding them to this stylesheet would ship them to the pure-HTML build. */
+   single-file build, so their styles live in about/about.css (imported by the
+   component) — adding them here would ship them to the pure-HTML build. */

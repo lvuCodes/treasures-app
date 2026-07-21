@@ -30,7 +30,7 @@
      button stay reachable. Negative margins bleed it across the sidebar's own
      padding, so the sections scroll under a full-width bar rather than through
      a transparent gutter beside it. */
-  .about-head {
+  header {
     position: sticky;
     top: 0;
     z-index: 1;
@@ -43,6 +43,59 @@
     background: var(--panel);
     border-bottom: 1px solid var(--border);
   }
+
+  header h2 {
+    font-size: 1.3rem;
+    margin: 0;
+    color: var(--text-h);
+  }
+
+  section {
+    margin: 8px 0 12px;
+
+    h2 {
+      font-size: 1.1rem;
+      margin: 0 0 6px;
+      color: var(--text-h);
+    }
+
+    p {
+      margin: 0;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 1.2rem;
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    /* Sources: separate the lead-in line from the list it introduces. */
+    p + ul {
+      margin-top: 8px;
+    }
+  }
+}
+
+/* The only class the markup still needs: the same pill serves as the footer
+   toggle and the sidebar's close button. The child combinator keeps the
+   centring off the close button, which is nested inside the sidebar. */
+.about-link {
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+  color: var(--text-h);
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.credits > .about-link {
+  display: block;
+  margin: 0 auto 16px;
 }
 
 body.about-open {
