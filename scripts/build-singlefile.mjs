@@ -20,8 +20,16 @@ const css = readFileSync(join(assets, cssFile), "utf8");
 
 let html = readFileSync(join(dist, "index.html"), "utf8");
 
-// Drop the favicon link (would point to a missing external file).
-html = html.replace(/\s*<link rel="icon"[^>]*>/, "");
+// Collapse the icon links into one inlined data URI — external icon files don't
+// ship with the single-file distribution, so they'd 404 over file://.
+const icon = readFileSync(join(dist, "favicon-32.png")).toString("base64");
+html = html.replace(/\s*<link rel="apple-touch-icon"[^>]*>/g, "");
+html = html.replace(/\s*<link rel="icon"[^>]*>/g, "");
+html = html.replace(
+  "<head>",
+  () =>
+    `<head>\n    <link rel="icon" type="image/png" href="data:image/png;base64,${icon}" />`,
+);
 // Inline the stylesheet. Use a replacement FUNCTION so `$` sequences in the
 // asset text are inserted verbatim (a string replacement treats $&, $`, $' etc.
 // as special patterns — the minified bundle is full of them).

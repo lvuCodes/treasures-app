@@ -40,6 +40,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - name: Assert the palette survived tree-shaking
+        run: grep -q -- '--item-1:' dist/assets/*.css
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
