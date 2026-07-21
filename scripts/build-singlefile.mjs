@@ -13,7 +13,8 @@ const assets = join(dist, "assets");
 const files = readdirSync(assets);
 const jsFile = files.find((f) => f.endsWith(".js"));
 const cssFile = files.find((f) => f.endsWith(".css"));
-if (!jsFile || !cssFile) throw new Error("dist/assets missing JS or CSS — run `npm run build` first");
+if (!jsFile || !cssFile)
+  throw new Error("dist/assets missing JS or CSS — run `npm run build` first");
 
 const js = readFileSync(join(assets, jsFile), "utf8");
 const css = readFileSync(join(assets, cssFile), "utf8");
@@ -27,8 +28,7 @@ html = html.replace(/\s*<link rel="apple-touch-icon"[^>]*>/g, "");
 html = html.replace(/\s*<link rel="icon"[^>]*>/g, "");
 html = html.replace(
   "<head>",
-  () =>
-    `<head>\n    <link rel="icon" type="image/png" href="data:image/png;base64,${icon}" />`,
+  () => `<head>\n    <link rel="icon" type="image/png" href="data:image/png;base64,${icon}" />`,
 );
 // Inline the stylesheet. Use a replacement FUNCTION so `$` sequences in the
 // asset text are inserted verbatim (a string replacement treats $&, $`, $' etc.

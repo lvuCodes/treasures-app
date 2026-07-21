@@ -4,13 +4,13 @@ A self-contained, drop-in theming system: nine macOS-Terminal-inspired palettes,
 
 ## Files
 
-| File | Role |
-|---|---|
-| `themes.css` | The palettes — `:root` default (Grass) plus a `[data-theme]` block per theme. Reusable tokens only. |
-| `theme.ts` | Framework-agnostic core: `THEMES`, `loadTheme`, `saveTheme`, `applyTheme`, `isThemeId`, `ThemeId`. |
-| `useTheme.ts` | React hook: `const [theme, setTheme] = useTheme()`. |
-| `ThemeSwitcher.tsx` / `.css` | The presentational picker bar. |
-| `index.ts` | Barrel — side-effect-imports `themes.css`, re-exports the public API. |
+| File                         | Role                                                                                                |
+| ---------------------------- | --------------------------------------------------------------------------------------------------- |
+| `themes.css`                 | The palettes — `:root` default (Grass) plus a `[data-theme]` block per theme. Reusable tokens only. |
+| `theme.ts`                   | Framework-agnostic core: `THEMES`, `loadTheme`, `saveTheme`, `applyTheme`, `isThemeId`, `ThemeId`.  |
+| `useTheme.ts`                | React hook: `const [theme, setTheme] = useTheme()`.                                                 |
+| `ThemeSwitcher.tsx` / `.css` | The presentational picker bar.                                                                      |
+| `index.ts`                   | Barrel — side-effect-imports `themes.css`, re-exports the public API.                               |
 
 ## Usage (React)
 
@@ -42,14 +42,14 @@ applyTheme(loadTheme()); // apply the persisted (or default) theme on boot
 
 Style the host app with these custom properties — they resolve to the active theme's palette. Derive any app-specific colors from them (e.g. `color-mix(in srgb, var(--accent) 64%, #fff 36%)`) rather than hard-coding hex, so the derivations track the theme.
 
-| Token | Meaning |
-|---|---|
-| `--bg`, `--panel`, `--code-bg` | Surfaces: page / card / code background |
-| `--text`, `--text-h` | Body text / heading (bright) text |
-| `--border` | Hairline border color |
-| `--accent`, `--on-accent` | Accent fill / readable text on the accent |
-| `--item-1` … `--item-10` | ANSI-style categorical ramp for indexed swatches |
-| `--item-forced` | Extra violet slot outside the numbered ramp |
+| Token                          | Meaning                                          |
+| ------------------------------ | ------------------------------------------------ |
+| `--bg`, `--panel`, `--code-bg` | Surfaces: page / card / code background          |
+| `--text`, `--text-h`           | Body text / heading (bright) text                |
+| `--border`                     | Hairline border color                            |
+| `--accent`, `--on-accent`      | Accent fill / readable text on the accent        |
+| `--item-1` … `--item-10`       | ANSI-style categorical ramp for indexed swatches |
+| `--item-forced`                | Extra violet slot outside the numbered ramp      |
 
 `color-scheme` is set per theme (dark themes vs. the light ones), so native form controls and scrollbars match automatically.
 

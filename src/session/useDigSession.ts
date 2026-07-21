@@ -1,10 +1,5 @@
 import { useMemo, useReducer } from "react";
-import {
-  cellKey,
-  recordedFootprints,
-  type DigCode,
-  type ItemDims,
-} from "../calculator/session";
+import { cellKey, recordedFootprints, type DigCode, type ItemDims } from "../calculator/session";
 import { initSession, sessionReducer } from "./reducer";
 
 // Generic over the concrete item type `T` (which must at least be ItemDims) so
@@ -24,7 +19,11 @@ interface DigSessionConfig<T extends ItemDims> {
 // and threads the live grid + item catalog into each action. The picker and any
 // dev overlay tooling stay OUT of here — the shell composes those around the
 // generic `commit`/`recordCell` (which take an opaque overlay tag).
-export function useDigSession<T extends ItemDims>({ grid, itemTypes, onCalculate }: DigSessionConfig<T>) {
+export function useDigSession<T extends ItemDims>({
+  grid,
+  itemTypes,
+  onCalculate,
+}: DigSessionConfig<T>) {
   const [state, dispatch] = useReducer(sessionReducer, itemTypes.length, initSession);
   const { counts, dug, parts, overlay, result, repick, repickBase, error, history } = state;
 
@@ -78,7 +77,15 @@ export function useDigSession<T extends ItemDims>({ grid, itemTypes, onCalculate
     glyph: string | undefined,
     overlayTag: string | undefined,
   ) =>
-    dispatch({ type: "commit", key, dug: dugVal, glyph, overlay: overlayTag, grid, items: expandedItems });
+    dispatch({
+      type: "commit",
+      key,
+      dug: dugVal,
+      glyph,
+      overlay: overlayTag,
+      grid,
+      items: expandedItems,
+    });
 
   const recordCell = (r: number, c: number, dugVal: DigCode, glyph?: string, overlayTag?: string) =>
     commit(cellKey(r, c), dugVal, glyph, overlayTag);

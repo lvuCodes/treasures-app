@@ -10,7 +10,8 @@ export const gopherOverlay: OverlaySlot = (_key, cell) => {
   if (cell.tag === "initial") node = "🐁";
   else if (cell.tag === "revealed") node = "🐀";
   else if (cell.tag === "hit") {
-    if (cell.isCracked) node = "🪤"; // rock cracked by gopher
+    if (cell.isCracked)
+      node = "🪤"; // rock cracked by gopher
     else if (cell.isEmpty) node = "🧀"; // soil emptied by gopher
     // a gopher-revealed item falls through to the keycap (node stays undefined)
   }

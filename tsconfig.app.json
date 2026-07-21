@@ -23,8 +23,5 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src"],
-  "exclude": [
-    "src/calculator/debug-print.ts",
-    "src/calculator/walkthrough-print.ts"
-  ]
+  "exclude": ["src/calculator/debug-print.ts", "src/calculator/walkthrough-print.ts"]
 }

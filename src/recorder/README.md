@@ -4,12 +4,12 @@ The right-click recorder modal: choose which item to place under the cursor, the
 
 ## Files
 
-| File | Role |
-|---|---|
+| File           | Role                                                                                                                              |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `usePicker.ts` | Modal state: anchor/position (with viewport-edge flip), item/part selection, and the feature-agnostic `forceMode` + `overlayTag`. |
-| `Picker.tsx` | Presentational modal (two views: item grid → part grid). Imports the stylesheet. |
-| `recorder.css` | Colocated, token-driven, nested styles. |
-| `index.ts` | Barrel. |
+| `Picker.tsx`   | Presentational modal (two views: item grid → part grid). Imports the stylesheet.                                                  |
+| `recorder.css` | Colocated, token-driven, nested styles.                                                                                           |
+| `index.ts`     | Barrel.                                                                                                                           |
 
 ## Feature-agnostic hooks
 

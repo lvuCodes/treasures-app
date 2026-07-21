@@ -98,7 +98,15 @@ describe("commit + undo are inverse", () => {
     s = sessionReducer(s, { type: "startSession", grid, items });
     const key = cellKey(2, 2);
     // The reducer never interprets the tag — an arbitrary string round-trips.
-    s = sessionReducer(s, { type: "commit", key, dug: 0, glyph: undefined, overlay: "hit", grid, items });
+    s = sessionReducer(s, {
+      type: "commit",
+      key,
+      dug: 0,
+      glyph: undefined,
+      overlay: "hit",
+      grid,
+      items,
+    });
     expect(s.overlay.get(key)).toBe("hit");
     s = sessionReducer(s, { type: "undo", grid, items });
     expect(s.overlay.has(key)).toBe(false);
@@ -106,7 +114,11 @@ describe("commit + undo are inverse", () => {
 
   it("undo on empty history is a no-op", () => {
     const grid = soilGrid();
-    const s = sessionReducer(initSession(8), { type: "startSession", grid, items: expand([1, 0, 0, 0, 0, 0, 0, 0]) });
+    const s = sessionReducer(initSession(8), {
+      type: "startSession",
+      grid,
+      items: expand([1, 0, 0, 0, 0, 0, 0, 0]),
+    });
     const next = sessionReducer(s, { type: "undo", grid, items: [] });
     expect(next).toBe(s);
   });

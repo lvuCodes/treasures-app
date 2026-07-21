@@ -2,3 +2,9 @@ dist
 coverage
 node_modules
 package-lock.json
+
+# Stylesheets are hand-formatted and linted by stylelint instead.
+**/*.css
+
+# Generated test data — expanding it buries real diffs.
+src/calculator/fixtures

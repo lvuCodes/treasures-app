@@ -83,7 +83,8 @@ export function buildCells(
       const code = dug.get(cellKey(r, c));
       const terrain: Terrain = v === 0 ? "wall" : v === 2 ? "rock" : "soil";
       const cell: Cell = { terrain, hitsRemaining: v === 2 ? 2 : v === 1 ? 1 : 0 };
-      if (code === "cracked") cell.hitsRemaining = 1; // rock hit once → 1 left
+      if (code === "cracked")
+        cell.hitsRemaining = 1; // rock hit once → 1 left
       else if (code === 0) cell.revealedEmpty = true;
       else if (typeof code === "number" && code >= 1) {
         cell.item = { index: code, part: parts.get(cellKey(r, c)) };
@@ -270,7 +271,11 @@ function placementsOf(
   blockedFn: (r: number, c: number) => boolean,
 ): number[][] {
   const out: number[][] = [];
-  for (const { rows: h, cols: w } of getOrientations({ count: 1, long: dims.long, short: dims.short })) {
+  for (const { rows: h, cols: w } of getOrientations({
+    count: 1,
+    long: dims.long,
+    short: dims.short,
+  })) {
     for (let r = 0; r <= rows - h; r++) {
       for (let c = 0; c <= cols - w; c++) {
         const cells: number[] = [];
@@ -447,5 +452,15 @@ export function evaluate(
     hammersRemaining += confirmed[r][c].hitsRemaining;
   }
 
-  return { kind, top, eliminated, forced, forcedItem, solved, confirmed, located, hammersRemaining };
+  return {
+    kind,
+    top,
+    eliminated,
+    forced,
+    forcedItem,
+    solved,
+    confirmed,
+    located,
+    hammersRemaining,
+  };
 }

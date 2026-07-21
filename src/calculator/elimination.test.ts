@@ -10,7 +10,15 @@ const sortKeys = (cs: { row: number; col: number }[]) => cs.map(key).sort();
 
 describe("solvability (overlap / unsolvable detection)", () => {
   it("a single item that fits is solvable", () => {
-    expect(isSolvable([[1, 1], [1, 1]], [{ count: 1, long: 2, short: 2 }])).toBe(true);
+    expect(
+      isSolvable(
+        [
+          [1, 1],
+          [1, 1],
+        ],
+        [{ count: 1, long: 2, short: 2 }],
+      ),
+    ).toBe(true);
   });
 
   it("items that cannot all fit without overlap are unsolvable", () => {
@@ -19,7 +27,15 @@ describe("solvability (overlap / unsolvable detection)", () => {
   });
 
   it("an item with no valid placement is unsolvable", () => {
-    expect(isSolvable([[1, 0], [0, 1]], [{ count: 1, long: 2, short: 1 }])).toBe(false);
+    expect(
+      isSolvable(
+        [
+          [1, 0],
+          [0, 1],
+        ],
+        [{ count: 1, long: 2, short: 1 }],
+      ),
+    ).toBe(false);
   });
 
   it("no remaining items is trivially solvable", () => {
@@ -30,12 +46,24 @@ describe("solvability (overlap / unsolvable detection)", () => {
 describe("elimination derivation", () => {
   it("eliminates cells no placement can reach", () => {
     // Diagonal soil with walls between: a 2x1 fits nowhere.
-    const elim = deriveEliminations([[1, 0], [0, 1]], [{ count: 1, long: 2, short: 1 }]);
+    const elim = deriveEliminations(
+      [
+        [1, 0],
+        [0, 1],
+      ],
+      [{ count: 1, long: 2, short: 1 }],
+    );
     expect(sortKeys(elim)).toEqual(["0,0", "1,1"].sort());
   });
 
   it("eliminates nothing when every diggable cell is reachable", () => {
-    const elim = deriveEliminations([[1, 1], [1, 1]], [{ count: 1, long: 2, short: 2 }]);
+    const elim = deriveEliminations(
+      [
+        [1, 1],
+        [1, 1],
+      ],
+      [{ count: 1, long: 2, short: 2 }],
+    );
     expect(elim).toEqual([]);
   });
 
@@ -91,12 +119,16 @@ describe("deriveForced (guaranteed item cells)", () => {
   it("forces the only 1×4 column plus a deduced left-block cell", () => {
     const g = Array.from({ length: 10 }, () => Array(10).fill(0));
     // left block (col 2/3) live cells, with the located 1×3 col-3 r4-6 blocked
-    g[3][2] = 1; g[3][3] = 1;
+    g[3][2] = 1;
+    g[3][3] = 1;
     g[4][2] = 2; /* 4,3 blocked */
     /* 5,2 dug empty (0), 5,3 blocked */
     g[6][2] = 1; /* 6,3 blocked */
     // right column (the only 1×4 slot)
-    g[3][5] = 2; g[4][5] = 1; g[5][5] = 2; g[6][5] = 1;
+    g[3][5] = 2;
+    g[4][5] = 1;
+    g[5][5] = 2;
+    g[6][5] = 1;
     const remaining: Item[] = [
       { count: 1, long: 1, short: 1 },
       { count: 1, long: 2, short: 1 },
@@ -118,7 +150,10 @@ describe("deriveForcedItems (unique-type deduction on forced cells)", () => {
   it("deduces the type when exactly one item type can cover each forced cell", () => {
     // A single column of 4 soil cells — the only slot for a 1×4 item.
     const g = Array.from({ length: 10 }, () => Array(10).fill(0));
-    g[0][0] = 1; g[1][0] = 1; g[2][0] = 1; g[3][0] = 1;
+    g[0][0] = 1;
+    g[1][0] = 1;
+    g[2][0] = 1;
+    g[3][0] = 1;
     const items: Item[] = [{ count: 1, long: 4, short: 1 }];
     const forced = deriveForced(g, items);
     const deduced = deriveForcedItems(g, items, forced);
@@ -133,7 +168,8 @@ describe("deriveForcedItems (unique-type deduction on forced cells)", () => {
     // only if multiple types fit. Here a single 1×2 in a 1×2 slot is the sole
     // option, so it IS deduced; contrast documents the size==1 gate.
     const g = Array.from({ length: 10 }, () => Array(10).fill(0));
-    g[0][0] = 1; g[0][1] = 1;
+    g[0][0] = 1;
+    g[0][1] = 1;
     const items: Item[] = [{ count: 1, long: 2, short: 1 }];
     const forced = deriveForced(g, items);
     const deduced = deriveForcedItems(g, items, forced);

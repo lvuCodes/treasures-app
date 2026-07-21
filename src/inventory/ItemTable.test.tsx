@@ -9,9 +9,7 @@ const items = [{ label: "coin" }, { label: "bar" }, { label: "chest" }];
 
 describe("ItemStatusTable", () => {
   it("renders each status: not found, found, located", () => {
-    render(
-      <ItemStatusTable items={items} foundSet={new Set([2])} located={new Set([3])} />,
-    );
+    render(<ItemStatusTable items={items} foundSet={new Set([2])} located={new Set([3])} />);
     expect(screen.getByText("❌ not found")).toBeTruthy();
     expect(screen.getByText("✅ found")).toBeTruthy();
     expect(screen.getByText("located")).toBeTruthy();

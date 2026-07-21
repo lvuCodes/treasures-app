@@ -81,9 +81,17 @@ export function ResultGrid({
             const isTentative = !isItem && !isConfirmed && !isForced && !!cc?.tentative;
             const isDug = isEmpty || isItem;
             const isEliminated =
-              !isDug && !isConfirmed && !isForced && !isTentative && (eliminated?.has(key) ?? false);
+              !isDug &&
+              !isConfirmed &&
+              !isForced &&
+              !isTentative &&
+              (eliminated?.has(key) ?? false);
             const isRec =
-              !isDug && !isConfirmed && !isForced && !isTentative && !isEliminated &&
+              !isDug &&
+              !isConfirmed &&
+              !isForced &&
+              !isTentative &&
+              !isEliminated &&
               (recommended?.has(key) ?? false);
             // The known item owning this cell — drives the per-item ring.
             const knownItem = isItem

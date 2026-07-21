@@ -4,13 +4,13 @@ The coupled session state machine — the recording cluster (item counts, per-ce
 
 ## Files
 
-| File | Role |
-|---|---|
-| `types.ts` | `SessionState`, `SessionAction`, `HistoryEntry`. |
-| `reducer.ts` | Pure `sessionReducer(state, action)` + `initSession`. No React/DOM. |
-| `reducer.test.ts` | Vitest unit tests (commit↔undo inverse, overlay round-trip, cap, re-pick, resets). |
+| File               | Role                                                                                                                                                                                  |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `types.ts`         | `SessionState`, `SessionAction`, `HistoryEntry`.                                                                                                                                      |
+| `reducer.ts`       | Pure `sessionReducer(state, action)` + `initSession`. No React/DOM.                                                                                                                   |
+| `reducer.test.ts`  | Vitest unit tests (commit↔undo inverse, overlay round-trip, cap, re-pick, resets).                                                                                                    |
 | `useDigSession.ts` | Thin `useReducer` wrapper: derives the read-models (`expandedItems`, `foundSet`, `repickFound`, `footprints`, `locked`, …) and threads the live grid + item catalog into each action. |
-| `index.ts` | Barrel. |
+| `index.ts`         | Barrel.                                                                                                                                                                               |
 
 ## Feature-agnostic overlay channel
 

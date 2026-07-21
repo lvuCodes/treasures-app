@@ -4,12 +4,12 @@ The solve-mode board: the terrain grid overlaid with the solver's per-cell verdi
 
 ## Files
 
-| File | Role |
-|---|---|
-| `ResultGrid.tsx` | The result-mode grid + legend. Computes each cell's class + glyph from the `Evaluation`. Imports the stylesheet. |
-| `legend.tsx` | `MAP_LEGEND`, `TERRAIN_GLYPH`, `DIG_GLYPH`, `ringShadow` — the display vocabulary. |
-| `map-display.css` | Result-state cell classes + legend (nested). |
-| `index.ts` | Barrel (also exports `OverlaySlot` / `OverlayCellState`). |
+| File              | Role                                                                                                             |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `ResultGrid.tsx`  | The result-mode grid + legend. Computes each cell's class + glyph from the `Evaluation`. Imports the stylesheet. |
+| `legend.tsx`      | `MAP_LEGEND`, `TERRAIN_GLYPH`, `DIG_GLYPH`, `ringShadow` — the display vocabulary.                               |
+| `map-display.css` | Result-state cell classes + legend (nested).                                                                     |
+| `index.ts`        | Barrel (also exports `OverlaySlot` / `OverlayCellState`).                                                        |
 
 ## Feature-agnostic overlay slot
 

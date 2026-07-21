@@ -21,7 +21,12 @@ const isDisabled = (el: HTMLElement) => (el as HTMLButtonElement).disabled;
 
 // Draw a 2×2 soil block at the top-left (each click cycles wall → dig).
 function drawSquare() {
-  for (const [r, c] of [[0, 0], [0, 1], [1, 0], [1, 1]] as const) {
+  for (const [r, c] of [
+    [0, 0],
+    [0, 1],
+    [1, 0],
+    [1, 1],
+  ] as const) {
     fireEvent.click(cell(r, c));
   }
 }

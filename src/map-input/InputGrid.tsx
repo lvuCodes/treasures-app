@@ -21,7 +21,8 @@ export function InputGrid({ grid, paintDown, paintEnter, cellClick, dragSize }: 
   return (
     <>
       <p className="hint">
-        Cells start as wall. Click to cycle <b>dig → rock → wall</b> (tan = dig, 🪨 = rock, dark = wall).
+        Cells start as wall. Click to cycle <b>dig → rock → wall</b> (tan = dig, 🪨 = rock, dark =
+        wall).
         <br />
         Click and drag to make rectangle inputs.
       </p>

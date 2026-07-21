@@ -11,8 +11,7 @@ import type { Cell } from "./cell-state";
 
 const anyFit = () => true;
 const key = (c: { row: number; col: number }) => `${c.row},${c.col}`;
-const sortKeys = (cells: { row: number; col: number }[]) =>
-  cells.map(key).sort();
+const sortKeys = (cells: { row: number; col: number }[]) => cells.map(key).sort();
 
 // A grid of plain soil; tests then drop item parts onto specific cells.
 const soilGrid = (rows: number, cols: number): Cell[][] =>
@@ -22,31 +21,23 @@ const soilGrid = (rows: number, cols: number): Cell[][] =>
 
 const flagged = (grid: Cell[][], flag: "confirmed" | "tentative") =>
   sortKeys(
-    grid.flatMap((row, r) =>
-      row.flatMap((cell, c) => (cell[flag] ? [{ row: r, col: c }] : [])),
-    ),
+    grid.flatMap((row, r) => row.flatMap((cell, c) => (cell[flag] ? [{ row: r, col: c }] : []))),
   );
 
 describe("footprint inference", () => {
   describe("glyph → footprint", () => {
     it("1x1 is its own footprint", () => {
-      expect(inferFootprint(undefined, 2, 3, 1, 1, anyFit)).toEqual([
-        { row: 2, col: 3 },
-      ]);
+      expect(inferFootprint(undefined, 2, 3, 1, 1, anyFit)).toEqual([{ row: 2, col: 3 }]);
     });
 
     it("╣ right-middle of a 3x2 spans the 3-tall column pair", () => {
       const fp = inferFootprint("╣", 4, 1, 3, 2, anyFit)!;
-      expect(sortKeys(fp)).toEqual(
-        ["3,0", "3,1", "4,0", "4,1", "5,0", "5,1"].sort(),
-      );
+      expect(sortKeys(fp)).toEqual(["3,0", "3,1", "4,0", "4,1", "5,0", "5,1"].sort());
     });
 
     it("╝ bottom-right of a 3x2 spans up-and-left", () => {
       const fp = inferFootprint("╝", 2, 3, 3, 2, anyFit)!;
-      expect(sortKeys(fp)).toEqual(
-        ["0,2", "0,3", "1,2", "1,3", "2,2", "2,3"].sort(),
-      );
+      expect(sortKeys(fp)).toEqual(["0,2", "0,3", "1,2", "1,3", "2,2", "2,3"].sort());
     });
 
     it("↕ vertical middle of a 3x1 spans the 3-tall column", () => {
@@ -103,9 +94,7 @@ describe("footprint inference", () => {
         const { grid } = deriveConfirmedState(stripped, dims);
         const derived = sortKeys(
           grid.flatMap((row, r) =>
-            row.flatMap((cell, c) =>
-              cell.confirmed ? [{ row: r, col: c }] : [],
-            ),
+            row.flatMap((cell, c) => (cell.confirmed ? [{ row: r, col: c }] : [])),
           ),
         );
         // Inference must cover everything the sheet confirmed...
@@ -245,8 +234,8 @@ describe("ambiguous (length-4) internal finds", () => {
         for (const k of cellKeys) {
           const [r, c] = k.split(",").map(Number);
           const glyph = partGlyphForFootprint(r, c, cellKeys, long, short);
-          const candidates = inferFootprints(glyph, r, c, long, short, anyFit).map(
-            (fp) => sortKeys(fp).join("|"),
+          const candidates = inferFootprints(glyph, r, c, long, short, anyFit).map((fp) =>
+            sortKeys(fp).join("|"),
           );
           // The original placement must be one of the glyph's candidate footprints.
           expect(candidates).toContain(cellKeys.join("|"));

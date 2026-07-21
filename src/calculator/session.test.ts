@@ -38,8 +38,12 @@ describe("remapRepick", () => {
     // Only the 2×3 (code 3 in base) is found; declare a hidden 1×1 (type 0).
     const base: ItemDims[] = [ITEM_TYPES[0], ITEM_TYPES[1], ITEM_TYPES[5]];
     const dug = new Map<string, DigCode>([
-      ["0,0", 3], ["0,1", 3], ["0,2", 3],
-      ["1,0", 3], ["1,1", 3], ["1,2", 3],
+      ["0,0", 3],
+      ["0,1", 3],
+      ["0,2", 3],
+      ["1,0", 3],
+      ["1,1", 3],
+      ["1,2", 3],
     ]);
     const { counts, dug: nd, items } = remapRepick(base, dug, hidden({ 0: 1 }), ITEM_TYPES);
 
@@ -53,7 +57,11 @@ describe("remapRepick", () => {
   it("never marks a newly-declared piece as found (the reported bug)", () => {
     // Reproduce the screenshot: 1×1 + 1×2 found, re-pick a single 2×2.
     const base: ItemDims[] = [ITEM_TYPES[0], ITEM_TYPES[1], ITEM_TYPES[5]];
-    const dug = new Map<string, DigCode>([["1,1", 1], ["2,1", 2], ["2,2", 2]]);
+    const dug = new Map<string, DigCode>([
+      ["1,1", 1],
+      ["2,1", 2],
+      ["2,2", 2],
+    ]);
     const grid = Array.from({ length: 10 }, () => Array(10).fill(1)); // all soil
     const { dug: nd, items } = remapRepick(base, dug, hidden({ 4: 1 }), ITEM_TYPES);
 
@@ -71,7 +79,11 @@ describe("evaluate — gopher-revealed item auto-location", () => {
   // item is logged on one of them via "Revealed item" mode. The item must still
   // auto-locate over the gopher-emptied cells.
   it("locates an item whose footprint spans gopher-revealed-empty cells", () => {
-    const dug = new Map<string, DigCode>([["5,3", 0], ["6,3", 0], ["4,3", 1]]);
+    const dug = new Map<string, DigCode>([
+      ["5,3", 0],
+      ["6,3", 0],
+      ["4,3", 1],
+    ]);
     const parts = new Map<string, string>([["4,3", "⬆️"]]); // 1×3 vertical, top cap
     const gopherCells = new Set(["4,3", "5,3", "6,3"]);
     const r = evaluate(soil(), dug, parts, [I3], gopherCells);
@@ -81,7 +93,11 @@ describe("evaluate — gopher-revealed item auto-location", () => {
   // Regression guard: outside gopher mode a revealed-empty cell still blocks an
   // item footprint, so the same digs without the gopher set do NOT locate.
   it("still blocks an item over a plain revealed-empty cell (no gopher set)", () => {
-    const dug = new Map<string, DigCode>([["5,3", 0], ["6,3", 0], ["4,3", 1]]);
+    const dug = new Map<string, DigCode>([
+      ["5,3", 0],
+      ["6,3", 0],
+      ["4,3", 1],
+    ]);
     const parts = new Map<string, string>([["4,3", "⬆️"]]);
     const r = evaluate(soil(), dug, parts, [I3]);
     expect(r.located.has(1)).toBe(false);
@@ -211,11 +227,7 @@ describe("evaluate — recommendation excludes settled cells and items", () => {
     for (const key of r.forced) expect(r.top.has(key)).toBe(false);
 
     // Only the three runs that can still host a 1×3 are candidates.
-    const runs = new Set([
-      "4,2", "4,3", "4,4",
-      "6,4", "6,5", "6,6",
-      "7,2", "7,3", "7,4",
-    ]);
+    const runs = new Set(["4,2", "4,3", "4,4", "6,4", "6,5", "6,6", "7,2", "7,3", "7,4"]);
     for (const key of r.top) expect(runs.has(key)).toBe(true);
   });
 });

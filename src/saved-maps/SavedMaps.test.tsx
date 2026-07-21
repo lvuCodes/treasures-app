@@ -62,7 +62,14 @@ describe("SavedMaps", () => {
 
   it("fires scroll-by when an arrow is pressed", () => {
     const onScrollBy = vi.fn();
-    render(<SavedMaps {...defaults} maps={[1, 2, 3, 4].map(map)} onScrollBy={onScrollBy} cardEnds={{ atStart: false, atEnd: false }} />);
+    render(
+      <SavedMaps
+        {...defaults}
+        maps={[1, 2, 3, 4].map(map)}
+        onScrollBy={onScrollBy}
+        cardEnds={{ atStart: false, atEnd: false }}
+      />,
+    );
     fireEvent.click(screen.getByLabelText("next saved maps"));
     expect(onScrollBy).toHaveBeenCalledWith(1);
     fireEvent.click(screen.getByLabelText("previous saved maps"));

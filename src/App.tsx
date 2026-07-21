@@ -4,24 +4,14 @@ import { ThemeSwitcher, useTheme } from "./theme";
 import { centerGrid, emptyGrid } from "./grid";
 import { SavedMaps, useSavedMaps } from "./saved-maps";
 import { InputGrid, useMapPaint } from "./map-input";
-import {
-  FoundKeptTable,
-  ITEM_TYPES,
-  ItemStatusTable,
-  ItemSteppers,
-} from "./inventory";
+import { FoundKeptTable, ITEM_TYPES, ItemStatusTable, ItemSteppers } from "./inventory";
 import { useDigSession } from "./session";
 import { Picker, usePicker } from "./recorder";
 import { ResultGrid } from "./map-display";
 import { GopherFoot, MapStateExport, SavedMapsExport, gopherOverlay } from "./dev";
 import { About } from "./about";
 import { BackLink } from "./back-link";
-import {
-  cellKey,
-  nextDigCode,
-  partGlyphForFootprint,
-  type DigCode,
-} from "./calculator/session";
+import { cellKey, nextDigCode, partGlyphForFootprint, type DigCode } from "./calculator/session";
 
 function App() {
   const [grid, setGrid] = useState<number[][]>(emptyGrid);
@@ -36,8 +26,21 @@ function App() {
     onCalculate: (g) => saved.save(g, true),
   });
   const {
-    counts, dug, parts, overlay, result, error, history, total,
-    locked, repick, inputMode, expandedItems, foundSet, repickFound, footprints,
+    counts,
+    dug,
+    parts,
+    overlay,
+    result,
+    error,
+    history,
+    total,
+    locked,
+    repick,
+    inputMode,
+    expandedItems,
+    foundSet,
+    repickFound,
+    footprints,
   } = session;
 
   // Recorder modal (position, item/part selection, generic force-mode + tag).
@@ -102,7 +105,13 @@ function App() {
       // the placement stays pinned. Still-ambiguous → let the player choose.
       if (item != null && (result?.located.has(item) ?? false)) {
         const dims = expandedItems[item - 1];
-        const glyph = partGlyphForFootprint(r, c, footprints.get(item) ?? [], dims.long, dims.short);
+        const glyph = partGlyphForFootprint(
+          r,
+          c,
+          footprints.get(item) ?? [],
+          dims.long,
+          dims.short,
+        );
         recordCell(r, c, item, glyph);
         return;
       }
@@ -212,8 +221,12 @@ function App() {
           {!locked && (
             <>
               <div className="map-actions">
-                <button className="pill" onClick={clearMap}>Reset map</button>
-                <button className="pill" onClick={() => saved.save(grid)}>Save map</button>
+                <button className="pill" onClick={clearMap}>
+                  Reset map
+                </button>
+                <button className="pill" onClick={() => saved.save(grid)}>
+                  Save map
+                </button>
               </div>
               {saved.status && <p className="hint save-status">{saved.status}</p>}
             </>
@@ -244,16 +257,14 @@ function App() {
           {repick && (
             <>
               <p className="hint">
-                Your map, digs, and found items are kept. Declare the still-hidden
-                pieces below, then recalculate.
+                Your map, digs, and found items are kept. Declare the still-hidden pieces below,
+                then recalculate.
               </p>
               <FoundKeptTable rows={repickFound} />
               <p className="hint">Declare hidden pieces to add:</p>
             </>
           )}
-          {!locked && (
-            <p className="hint">Set item counts.</p>
-          )}
+          {!locked && <p className="hint">Set item counts.</p>}
           {inputMode && (
             <>
               <ItemSteppers
@@ -277,8 +288,7 @@ function App() {
               {result?.kind === "ok" && result.solved && (
                 <div className="result-head centered">
                   <p>
-                    Solved! 🎯 Dig out the
-                    coloured cells - <b>{result.hammersRemaining}</b> hammer
+                    Solved! 🎯 Dig out the coloured cells - <b>{result.hammersRemaining}</b> hammer
                     {result.hammersRemaining === 1 ? "" : "s"} needed for completion.
                   </p>
                 </div>
@@ -286,11 +296,11 @@ function App() {
               {result?.kind === "ok" && !result.solved && (
                 <div className="result-head">
                   <p>
-                    <b>Left-click</b> a cell to log hits:
-                    ⚒️→⛏️→0️⃣.
+                    <b>Left-click</b> a cell to log hits: ⚒️→⛏️→0️⃣.
                   </p>
                   <p>
-                    <b>Right-click</b> a cell to open the item selector. Select to place an item or reset the cell. The remainder of the item will populate automatically.
+                    <b>Right-click</b> a cell to open the item selector. Select to place an item or
+                    reset the cell. The remainder of the item will populate automatically.
                   </p>
                 </div>
               )}
@@ -308,7 +318,9 @@ function App() {
               )}
               {result?.kind === "unsolvable" && (
                 <div className="result-head reset-items centered">
-                  <p className="error">⚠️ We can't solve this — did you record the items correctly?</p>
+                  <p className="error">
+                    ⚠️ We can't solve this — did you record the items correctly?
+                  </p>
                   <div className="actions">
                     <button className="primary" onClick={resetItems}>
                       Keep map, reset items
@@ -327,18 +339,10 @@ function App() {
               />
 
               <div className="actions">
-                <button
-                  className="primary"
-                  onClick={session.undo}
-                  disabled={history.length === 0}
-                >
+                <button className="primary" onClick={session.undo} disabled={history.length === 0}>
                   ↩️ Undo
                 </button>
-                <button
-                  className="primary"
-                  onClick={startSession}
-                  disabled={history.length === 0}
-                >
+                <button className="primary" onClick={startSession} disabled={history.length === 0}>
                   Reset
                 </button>
                 <button className="primary" onClick={newSession}>
@@ -389,7 +393,6 @@ function App() {
       )}
 
       <footer className="credits">
-
         <ThemeSwitcher theme={theme} onChange={setTheme} />
 
         <p className="credits-copyright">

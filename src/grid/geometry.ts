@@ -29,7 +29,10 @@ export function withEntry<V>(m: Map<string, V>, key: string, v: V | undefined): 
 // Smallest rectangle containing every non-wall cell (map minimization). An
 // all-wall grid has no content, so it falls back to the full board.
 export function boundingBox(grid: number[][]) {
-  let r0 = SIZE, r1 = -1, c0 = SIZE, c1 = -1;
+  let r0 = SIZE,
+    r1 = -1,
+    c0 = SIZE,
+    c1 = -1;
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
       if (grid[r][c] !== 0) {

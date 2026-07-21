@@ -71,10 +71,7 @@ function sig(placement: number[]): string {
 // Analyse the joint placement of every still-unplaced unit over the target
 // cells. `cols` is the grid width (for flat ⇆ row/col). `targets` are the undug
 // diggable cells eligible to be forced/eliminated.
-export function analyzeArrangements(
-  units: PlacementUnit[],
-  targets: JointTarget[],
-): JointAnalysis {
+export function analyzeArrangements(units: PlacementUnit[], targets: JointTarget[]): JointAnalysis {
   const pls = units.map((u) => u.placements);
   const all = units.map((_, i) => i);
 
@@ -110,7 +107,13 @@ export function analyzeArrangements(
     for (let i = 0; i < units.length && !covered; i++) {
       for (const p of pls[i]) {
         if (!p.includes(flat)) continue;
-        if (canPlaceAll(pls, all.filter((x) => x !== i), new Set(p))) {
+        if (
+          canPlaceAll(
+            pls,
+            all.filter((x) => x !== i),
+            new Set(p),
+          )
+        ) {
           covered = true;
           break;
         }
@@ -164,9 +167,7 @@ export function analyzeArrangements(
         located.add(units[i].index);
         regionOf.set(units[i].index, region);
       }
-      const leftover = regions
-        .filter((p) => !taken.has(sig(p)))
-        .sort((a, b) => a[0] - b[0]); // reading order by first (top-left) cell
+      const leftover = regions.filter((p) => !taken.has(sig(p))).sort((a, b) => a[0] - b[0]); // reading order by first (top-left) cell
       const remaining = otherUnits.sort((a, b) => units[a].index - units[b].index);
       leftover.forEach((region, j) => {
         const i = remaining[j];

@@ -7,12 +7,7 @@ export interface GridCell {
 
 // All valid placements of an item, each as a sorted list of flat cell indices
 // (row * cols + col). A placement is valid when every covered cell is diggable.
-function placementsFor(
-  grid: number[][],
-  item: Item,
-  rows: number,
-  cols: number,
-): number[][] {
+function placementsFor(grid: number[][], item: Item, rows: number, cols: number): number[][] {
   const out: number[][] = [];
   for (const { rows: h, cols: w } of getOrientations(item)) {
     for (let r = 0; r <= rows - h; r++) {
@@ -39,15 +34,9 @@ function expand(items: Item[]): Item[] {
 // Can the items at `remaining` indices be placed without overlapping `occupied`
 // or each other? Backtracking, short-circuits on the first complete placement.
 // `remaining` is processed fewest-placements-first for faster pruning.
-function placeable(
-  plPerItem: number[][][],
-  remaining: number[],
-  occupied: Set<number>,
-): boolean {
+function placeable(plPerItem: number[][][], remaining: number[], occupied: Set<number>): boolean {
   if (remaining.length === 0) return true;
-  const ordered = [...remaining].sort(
-    (a, b) => plPerItem[a].length - plPerItem[b].length,
-  );
+  const ordered = [...remaining].sort((a, b) => plPerItem[a].length - plPerItem[b].length);
   const [idx, ...rest] = ordered;
   for (const placement of plPerItem[idx]) {
     if (placement.some((k) => occupied.has(k))) continue;

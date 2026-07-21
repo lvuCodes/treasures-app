@@ -41,9 +41,7 @@ export type { Orientation };
 export function solve(grid: Grid, items: Item[]): SolverResult {
   const rows = grid.length;
   const cols = grid[0].length;
-  const scoreGrid: number[][] = Array.from({ length: rows }, () =>
-    new Array(cols).fill(0),
-  );
+  const scoreGrid: number[][] = Array.from({ length: rows }, () => new Array(cols).fill(0));
 
   // Each item instance carries its area (cell count). Larger items weight more
   // heavily so a bigger item is prioritized over several smaller ones that
@@ -59,9 +57,7 @@ export function solve(grid: Grid, items: Item[]): SolverResult {
 
   for (const { orientations, area } of expanded) {
     let totalPlacements = 0;
-    const cellCounts: number[][] = Array.from({ length: rows }, () =>
-      new Array(cols).fill(0),
-    );
+    const cellCounts: number[][] = Array.from({ length: rows }, () => new Array(cols).fill(0));
 
     for (const { rows: h, cols: w } of orientations) {
       for (let r = 0; r <= rows - h; r++) {

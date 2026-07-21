@@ -39,9 +39,15 @@ const LINE_GLYPH: Record<string, { axis: "h" | "v"; pos: Pos }> = {
 const LINE_H: Record<Pos, string> = { start: "⬅️", mid: "↔️", end: "➡️" };
 const LINE_V: Record<Pos, string> = { start: "⬆️", mid: "↕️", end: "⬇️" };
 const BOX_GLYPHS: Record<string, string> = {
-  "start,start": "╔", "start,mid": "╦", "start,end": "╗",
-  "mid,start": "╠", "mid,mid": "╬", "mid,end": "╣",
-  "end,start": "╚", "end,mid": "╩", "end,end": "╝",
+  "start,start": "╔",
+  "start,mid": "╦",
+  "start,end": "╗",
+  "mid,start": "╠",
+  "mid,mid": "╬",
+  "mid,end": "╣",
+  "end,start": "╚",
+  "end,mid": "╩",
+  "end,end": "╝",
 };
 
 // The positional part glyph for cell (r,c) within a located item's footprint,
@@ -59,9 +65,12 @@ export function partGlyphForFootprint(
   const cells = cellKeys.map((k) => k.split(",").map(Number));
   const rs = cells.map((x) => x[0]);
   const cs = cells.map((x) => x[1]);
-  const r0 = Math.min(...rs), r1 = Math.max(...rs);
-  const c0 = Math.min(...cs), c1 = Math.max(...cs);
-  const at = (i: number, lo: number, hi: number): Pos => (i === lo ? "start" : i === hi ? "end" : "mid");
+  const r0 = Math.min(...rs),
+    r1 = Math.max(...rs);
+  const c0 = Math.min(...cs),
+    c1 = Math.max(...cs);
+  const at = (i: number, lo: number, hi: number): Pos =>
+    i === lo ? "start" : i === hi ? "end" : "mid";
   if (short === 1) {
     return c1 > c0 ? LINE_H[at(c, c0, c1)] : LINE_V[at(r, r0, r1)];
   }
@@ -99,7 +108,10 @@ function offsets(pos: Pos, len: number): number[] {
 // Canonical signature for a footprint (order-independent), used to dedupe
 // candidates and to intersect candidate sets across an item's recorded parts.
 function sig(cells: FootprintCell[]): string {
-  return cells.map(({ row, col }) => `${row},${col}`).sort().join("|");
+  return cells
+    .map(({ row, col }) => `${row},${col}`)
+    .sort()
+    .join("|");
 }
 
 function dedupe(list: FootprintCell[][]): FootprintCell[][] {
@@ -205,9 +217,7 @@ export function itemFootprints(
   let cands = inferFootprints(parts[0].glyph, parts[0].row, parts[0].col, long, short, fits);
   for (let k = 1; k < parts.length && cands.length > 0; k++) {
     const p = parts[k];
-    const keep = new Set(
-      inferFootprints(p.glyph, p.row, p.col, long, short, fits).map(sig),
-    );
+    const keep = new Set(inferFootprints(p.glyph, p.row, p.col, long, short, fits).map(sig));
     cands = cands.filter((f) => keep.has(sig(f)));
   }
   return cands;

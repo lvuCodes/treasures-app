@@ -13,9 +13,7 @@ export function MiniMap({ grid }: { grid: number[][] }) {
       style={{ gridTemplateColumns: `repeat(${cs.length}, var(--mini-cell))` }}
     >
       {rs.map((r) =>
-        cs.map((c) => (
-          <span key={`${r},${c}`} className={`mini-cell terrain-${grid[r][c]}`} />
-        )),
+        cs.map((c) => <span key={`${r},${c}`} className={`mini-cell terrain-${grid[r][c]}`} />),
       )}
     </div>
   );

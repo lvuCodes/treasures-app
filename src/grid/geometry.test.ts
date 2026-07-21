@@ -38,12 +38,18 @@ describe("withEntry", () => {
   it("sets a key without mutating the source", () => {
     const a = new Map([["x", 1]]);
     const b = withEntry(a, "y", 2);
-    expect([...b]).toEqual([["x", 1], ["y", 2]]);
+    expect([...b]).toEqual([
+      ["x", 1],
+      ["y", 2],
+    ]);
     expect(a.has("y")).toBe(false); // source untouched
   });
 
   it("deletes a key when the value is undefined", () => {
-    const a = new Map([["x", 1], ["y", 2]]);
+    const a = new Map([
+      ["x", 1],
+      ["y", 2],
+    ]);
     const b = withEntry(a, "y", undefined);
     expect([...b]).toEqual([["x", 1]]);
     expect(a.has("y")).toBe(true); // source untouched
@@ -52,7 +58,14 @@ describe("withEntry", () => {
 
 describe("boundingBox", () => {
   it("wraps the used region tightly", () => {
-    expect(boundingBox(gridWith([[2, 3], [4, 5]]))).toEqual({ r0: 2, r1: 4, c0: 3, c1: 5 });
+    expect(
+      boundingBox(
+        gridWith([
+          [2, 3],
+          [4, 5],
+        ]),
+      ),
+    ).toEqual({ r0: 2, r1: 4, c0: 3, c1: 5 });
   });
 
   it("falls back to the full board when all-wall", () => {
@@ -69,7 +82,11 @@ describe("centerGrid", () => {
   });
 
   it("preserves the cropped shape (placement-independent)", () => {
-    const original = gridWith([[1, 1], [1, 2], [2, 1]]); // an L
+    const original = gridWith([
+      [1, 1],
+      [1, 2],
+      [2, 1],
+    ]); // an L
     // Re-centring must not change the shape's signature.
     expect(mapSignature(centerGrid(original))).toBe(mapSignature(original));
   });
@@ -81,20 +98,46 @@ describe("mapSignature", () => {
   });
 
   it("is identical for the same shape in different corners", () => {
-    const topLeft = gridWith([[0, 0], [0, 1], [1, 0]]);
-    const shifted = gridWith([[5, 6], [5, 7], [6, 6]]);
+    const topLeft = gridWith([
+      [0, 0],
+      [0, 1],
+      [1, 0],
+    ]);
+    const shifted = gridWith([
+      [5, 6],
+      [5, 7],
+      [6, 6],
+    ]);
     expect(mapSignature(topLeft)).toBe(mapSignature(shifted));
   });
 
   it("differs for genuinely different shapes", () => {
-    const horizontal = gridWith([[0, 0], [0, 1]]);
-    const vertical = gridWith([[0, 0], [1, 0]]);
+    const horizontal = gridWith([
+      [0, 0],
+      [0, 1],
+    ]);
+    const vertical = gridWith([
+      [0, 0],
+      [1, 0],
+    ]);
     expect(mapSignature(horizontal)).not.toBe(mapSignature(vertical));
   });
 
   it("distinguishes terrain codes within the same footprint", () => {
-    const soil = gridWith([[0, 0], [0, 1]], 1);
-    const rock = gridWith([[0, 0], [0, 1]], 2);
+    const soil = gridWith(
+      [
+        [0, 0],
+        [0, 1],
+      ],
+      1,
+    );
+    const rock = gridWith(
+      [
+        [0, 0],
+        [0, 1],
+      ],
+      2,
+    );
     expect(mapSignature(soil)).not.toBe(mapSignature(rock));
   });
 });

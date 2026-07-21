@@ -11,7 +11,10 @@ function gridWith(cells: [number, number][], v = 1): number[][] {
 
 describe("appendMap", () => {
   it("appends a non-empty, non-duplicate map", () => {
-    const grid = gridWith([[0, 0], [0, 1]]);
+    const grid = gridWith([
+      [0, 0],
+      [0, 1],
+    ]);
     const outcome = appendMap([], grid);
     expect(outcome).toEqual({ ok: true, maps: [grid] });
   });
@@ -21,14 +24,26 @@ describe("appendMap", () => {
   });
 
   it("skips a placement-independent duplicate", () => {
-    const existing = gridWith([[0, 0], [0, 1]]);
-    const shifted = gridWith([[5, 6], [5, 7]]); // same shape, different corner
+    const existing = gridWith([
+      [0, 0],
+      [0, 1],
+    ]);
+    const shifted = gridWith([
+      [5, 6],
+      [5, 7],
+    ]); // same shape, different corner
     expect(appendMap([existing], shifted)).toEqual({ ok: false, reason: "duplicate" });
   });
 
   it("keeps a genuinely different shape", () => {
-    const horizontal = gridWith([[0, 0], [0, 1]]);
-    const vertical = gridWith([[0, 0], [1, 0]]);
+    const horizontal = gridWith([
+      [0, 0],
+      [0, 1],
+    ]);
+    const vertical = gridWith([
+      [0, 0],
+      [1, 0],
+    ]);
     const outcome = appendMap([horizontal], vertical);
     expect(outcome.ok).toBe(true);
     if (outcome.ok) expect(outcome.maps).toHaveLength(2);
@@ -44,8 +59,20 @@ describe("appendMap", () => {
   });
 
   it("treats different terrain codes in the same footprint as distinct", () => {
-    const soil = gridWith([[0, 0], [0, 1]], 1);
-    const rock = gridWith([[0, 0], [0, 1]], 2);
+    const soil = gridWith(
+      [
+        [0, 0],
+        [0, 1],
+      ],
+      1,
+    );
+    const rock = gridWith(
+      [
+        [0, 0],
+        [0, 1],
+      ],
+      2,
+    );
     expect(appendMap([soil], rock).ok).toBe(true);
   });
 });

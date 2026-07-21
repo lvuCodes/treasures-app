@@ -25,7 +25,10 @@ export function MapStateExport({ getPayload }: { getPayload: () => unknown }) {
   const [status, setStatus] = useState("");
   return (
     <div className="actions gopher-actions">
-      <button className="primary" onClick={async () => setStatus(await saveCapture("map-state", getPayload()))}>
+      <button
+        className="primary"
+        onClick={async () => setStatus(await saveCapture("map-state", getPayload()))}
+      >
         💾 Save map state
       </button>
       {status && <span className="hint">{status}</span>}

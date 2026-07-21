@@ -31,8 +31,7 @@ export function persistSavedMaps(maps: number[][][]) {
 // The result of trying to append a drawn map: the new list, or why it was
 // skipped (empty draw / a placement-independent duplicate of an existing map).
 export type SaveOutcome =
-  | { ok: true; maps: number[][][] }
-  | { ok: false; reason: "empty" | "duplicate" };
+  { ok: true; maps: number[][][] } | { ok: false; reason: "empty" | "duplicate" };
 
 // Pure append decision: uniqueness is judged on the bounding-box crop
 // (mapSignature), so the same shape drawn in a different corner isn't saved

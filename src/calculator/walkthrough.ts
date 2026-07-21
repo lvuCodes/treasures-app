@@ -126,10 +126,7 @@ export function evaluateWalkthrough(
 
     const recorded = suggestion ? cellsWhere(suggestion.grid, (c) => !!c.suggested) : [];
     const topSet = new Set(solverTop);
-    const recordedMax = recorded.reduce(
-      (m, c) => Math.max(m, scoreByCell.get(c) ?? 0),
-      0,
-    );
+    const recordedMax = recorded.reduce((m, c) => Math.max(m, scoreByCell.get(c) ?? 0), 0);
     out.push({
       step: primary.step,
       suggestionStep: suggestion ? suggestion.step : null,

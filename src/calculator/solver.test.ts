@@ -41,9 +41,7 @@ describe("Recommend First Dig", () => {
     });
 
     it("completes in under 100ms for a 10x10 grid", () => {
-      const grid: number[][] = Array.from({ length: 10 }, () =>
-        new Array(10).fill(1),
-      );
+      const grid: number[][] = Array.from({ length: 10 }, () => new Array(10).fill(1));
       const items: Item[] = [
         { count: 2, long: 3, short: 2 },
         { count: 3, long: 2, short: 1 },
@@ -97,11 +95,7 @@ describe("Recommend First Dig", () => {
       const grid = [[1, 2, 1]];
       const items: Item[] = [{ count: 1, long: 2, short: 1 }];
       const result = solve(grid, items);
-      expect(result.top.map((c) => `${c.row},${c.col}`).sort()).toEqual([
-        "0,0",
-        "0,1",
-        "0,2",
-      ]);
+      expect(result.top.map((c) => `${c.row},${c.col}`).sort()).toEqual(["0,0", "0,1", "0,2"]);
     });
   });
 
@@ -124,9 +118,7 @@ describe("Recommend First Dig", () => {
     fixtures.forEach((map, i) => {
       const grid = toNumericGrid(map.grid);
       const dims = `${grid.length}x${grid[0]?.length ?? 0}`;
-      const itemSig = map.items
-        .map((it) => `${it.count}x${it.long}x${it.short}`)
-        .join("+");
+      const itemSig = map.items.map((it) => `${it.count}x${it.long}x${it.short}`).join("+");
       it(`fixture ${i} (${dims}, ${itemSig}): scores only diggable cells`, () => {
         const result = solve(grid, map.items);
         for (const cell of result.scores) {
