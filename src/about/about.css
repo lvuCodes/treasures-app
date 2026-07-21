@@ -93,8 +93,11 @@
   white-space: nowrap;
 }
 
+/* fit-content is load-bearing: a button shrink-to-fits even at display: block,
+   and auto margins only centre a box whose width is definite. */
 .app > .about-link {
   display: block;
+  width: fit-content;
   margin: 0 auto 16px;
 }
 
