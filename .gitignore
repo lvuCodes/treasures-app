@@ -33,3 +33,4 @@ treasures-app.html
 *.njsproj
 *.sln
 *.sw?
+/debug
