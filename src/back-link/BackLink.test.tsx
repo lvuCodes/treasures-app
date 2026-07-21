@@ -8,13 +8,13 @@ afterEach(cleanup);
 describe("BackLink", () => {
   it("points at the author's home page by default", () => {
     render(<BackLink />);
-    const link = screen.getByRole("link", { name: "← Home" });
+    const link = screen.getByRole("link", { name: "← lvuCodes" });
     expect(link.getAttribute("href")).toBe("https://lvucodes.github.io");
   });
 
   it("wears the shared pill skin rather than its own", () => {
     render(<BackLink />);
-    expect(screen.getByRole("link", { name: "← Home" }).className).toBe("pill");
+    expect(screen.getByRole("link", { name: "← lvuCodes" }).className).toBe("pill");
   });
 
   it("honours a custom target and label", () => {
