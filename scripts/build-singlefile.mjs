@@ -56,7 +56,6 @@ const DEV_SENTINELS = [
   "🧀", // gopher-emptied soil glyph
   "🪤", // gopher-cracked rock glyph
   "/__capture", // dev capture endpoint
-  "about-sidebar", // dev About CSS class
   "Save map state", // dev capture button
   "Export saved maps", // dev capture button
   "Initial gopher", // dev gopher button

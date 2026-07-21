@@ -28,6 +28,8 @@ jobs:
       - run: npm run lint
       - run: npx tsc -b
       - run: npm run test:coverage
+      # Also runs the dev-sentinel guard, which plain `npm run build` skips.
+      - run: npm run build:singlefile
 
   build:
     needs: check

@@ -13,7 +13,8 @@ import {
 import { useDigSession } from "./session";
 import { Picker, usePicker } from "./recorder";
 import { ResultGrid } from "./map-display";
-import { DevAbout, GopherFoot, MapStateExport, SavedMapsExport, gopherOverlay } from "./dev";
+import { GopherFoot, MapStateExport, SavedMapsExport, gopherOverlay } from "./dev";
+import { About } from "./about";
 import {
   cellKey,
   nextDigCode,
@@ -385,8 +386,7 @@ function App() {
       )}
 
       <footer className="credits">
-        {/* Dev-only About panel (toggle + sidebar) — tree-shaken from prod. */}
-        {import.meta.env.DEV && <DevAbout />}
+        <About />
         <p className="credits-title">Sources</p>
         <p className="credits-note">
           The dig-optimization approach was informed by these battleship probability solvers:

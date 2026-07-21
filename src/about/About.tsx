@@ -96,11 +96,11 @@ function AboutSidebar({ onClose }: { onClose: () => void }) {
   );
 }
 
-// Dev-only About panel: a footer toggle that opens a right-hand sidebar which
-// scoots the app over on wide screens and covers it on narrow ones. Self-
-// contained (owns its open state + the body-class effect), so the shell wires it
-// with a single import.meta.env.DEV guard.
-export function DevAbout() {
+// About panel: a footer toggle that opens a right-hand sidebar which scoots the
+// app over on wide screens and covers it on narrow ones. Self-contained (owns
+// its open state + the body-class effect), so the shell wires it with a single
+// unconditional render.
+export function About() {
   const [open, setOpen] = useState(false);
 
   // Scoot the page over (CSS `body.about-open`) while the sidebar is open.

@@ -7,4 +7,3 @@
 export { gopherOverlay } from "./gopher/gopherOverlay";
 export { GopherFoot } from "./gopher/GopherFoot";
 export { SavedMapsExport, MapStateExport } from "./capture/CaptureButtons";
-export { DevAbout } from "./about/DevAbout";

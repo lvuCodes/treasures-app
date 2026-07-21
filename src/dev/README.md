@@ -12,8 +12,6 @@ Dev-only tooling — **the one release-detachable feature**. Everything here is 
 | `capture/capture.ts` | POST an export payload to the dev server's `/__capture` endpoint (see `vite.config.ts`). |
 | `capture/CaptureButtons.tsx` | `SavedMapsExport` + `MapStateExport` — write state to `captures/` on disk. |
 | `capture/capture.css` | The export button containers. |
-| `about/DevAbout.tsx` | The About panel (footer toggle + right-hand sidebar); owns its own open state. |
-| `about/about.css` | The sidebar + scoot rules. |
 | `index.ts` | Barrel — **no side-effect (CSS) imports** here, so an unused leaf takes its CSS with it. |
 
 ## Subset-release contract

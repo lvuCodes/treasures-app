@@ -26,6 +26,7 @@ Distributed as a single self-contained HTML file — open in any browser, no ins
 
 - **Themes.** Nine color themes (Grass, Homebrew, Pro, Ocean, Red Sands, Man Page, Novel, Silver, Basic). Selection persists via `localStorage`.
 - **Saved maps** persist locally via `localStorage`. All persistence is local-only — no cookies, no analytics, no network requests; nothing leaves the device.
+- **About panel.** A footer toggle opens a right-hand sidebar covering the app's purpose, a plain-language overview, the ranking mechanism, the roadmap, and the local-only privacy posture. It scoots the app aside on wide screens and covers it on narrow ones.
 
 ## Development
 
@@ -37,7 +38,11 @@ npm run test:watch     # Watch mode
 npm run test:verbose   # Vitest verbose reporter — one line per test
 npm run build          # Production build → dist/
 npm run build:singlefile  # Build, then inline JS/CSS into treasures-app.html
+npm run test:coverage  # Run the suite with coverage thresholds enforced
+npm run lint           # ESLint
 ```
+
+CI (`.github/workflows/deploy.yml`) runs lint, `tsc -b`, the coverage-gated suite, and `build:singlefile` on every push and pull request. Pushes to `main` that clear those checks build the site and deploy it to GitHub Pages at [lvucodes.github.io/treasures-app](https://lvucodes.github.io/treasures-app/); pull requests are validated but not deployed.
 
 ## Project Structure
 
@@ -62,9 +67,10 @@ src/
   inventory/           # Item catalog + status table + steppers
   recorder/            # Right-click item/part picker modal
   saved-maps/          # Persisted map carousel
+  about/               # About panel (footer toggle + sidebar)
 
   # ---- the one release-detachable feature (dropped from prod) ----
-  dev/                 # gopher / capture / about — behind import.meta.env.DEV
+  dev/                 # gopher / capture — behind import.meta.env.DEV
 
 scripts/
   build-singlefile.mjs # Inlines the Vite build into one HTML file (+ subset-release guard)
