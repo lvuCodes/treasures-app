@@ -7,7 +7,7 @@ function AboutSidebar({ onClose }: { onClose: () => void }) {
     <aside className="about-sidebar" aria-label="About Treasures Dig Optimizer">
       <header>
         <h2>About</h2>
-        <button className="about-link" onClick={onClose} aria-label="Close about">
+        <button className="pill about-link" onClick={onClose} aria-label="Close about">
           ✕
         </button>
       </header>
@@ -97,7 +97,7 @@ export function About() {
   return (
     <>
       {!open && (
-        <button className="about-link" onClick={() => setOpen(true)}>
+        <button className="pill about-link" onClick={() => setOpen(true)}>
           About
         </button>
       )}

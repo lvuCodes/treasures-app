@@ -15,6 +15,7 @@ import { Picker, usePicker } from "./recorder";
 import { ResultGrid } from "./map-display";
 import { GopherFoot, MapStateExport, SavedMapsExport, gopherOverlay } from "./dev";
 import { About } from "./about";
+import { BackLink } from "./back-link";
 import {
   cellKey,
   nextDigCode,
@@ -174,11 +175,7 @@ function App() {
 
   return (
     <main className="app">
-      <nav className="back-nav">
-        <a className="back-link" href="https://lvucodes.github.io">
-          ← Home
-        </a>
-      </nav>
+      <BackLink />
 
       <div className="header-bar">
         <h1>Treasures Dig Optimizer</h1>
@@ -215,8 +212,8 @@ function App() {
           {!locked && (
             <>
               <div className="map-actions">
-                <button onClick={clearMap}>Reset map</button>
-                <button onClick={() => saved.save(grid)}>Save map</button>
+                <button className="pill" onClick={clearMap}>Reset map</button>
+                <button className="pill" onClick={() => saved.save(grid)}>Save map</button>
               </div>
               {saved.status && <p className="hint save-status">{saved.status}</p>}
             </>

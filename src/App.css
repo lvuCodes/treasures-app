@@ -13,8 +13,10 @@
   font-size: 1.6rem;
 }
 
-/* The dev-only About sidebar is styled in dev/about/about.css (dropped from prod).
-   The theme switcher (.theme-bar / .theme-btn) lives in src/theme/ThemeSwitcher.css. */
+/* The About sidebar is styled in about/about.css, the back link in
+   back-link/back-link.css, and the theme switcher (.theme-bar / .theme-btn) in
+   theme/ThemeSwitcher.css — each imported by the component that owns it. The
+   shared .pill skin those controls wear lives in index.css. */
 
 .hint {
   color: var(--text);
@@ -113,22 +115,6 @@ button.cell:hover {
   gap: 8px;
 }
 
-.map-actions button {
-  border: 1px solid var(--border);
-  background: var(--code-bg);
-  color: var(--text-h);
-  border-radius: 6px;
-  padding: 5px 14px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  font-family: var(--sans);
-}
-
-.map-actions button:hover {
-  filter: brightness(1.12);
-}
-
-
 /* Responsive: single-column layout on narrow screens. Item-panel widths adapt
    in inventory.css. */
 @media (max-width: 900px) {
@@ -147,15 +133,6 @@ button.cell:hover {
     justify-content: center;
     margin: 0 auto;
   }
-}
-
-.total {
-  font-weight: 400;
-  margin: 4px 0 14px;
-}
-
-.total.bad {
-  color: #ffd9a0;
 }
 
 .primary {
@@ -216,27 +193,6 @@ button.cell:hover {
   color: #cd0000;
 }
 
-.result {
-  margin-top: 16px;
-}
-
-.result .legend {
-  color: var(--text);
-  font-size: 0.9rem;
-}
-
-.inv {
-  list-style: none;
-  padding: 0;
-  margin: 8px 0 0;
-  columns: 2;
-  font-size: 0.95rem;
-}
-
-.inv li {
-  padding: 2px 0;
-}
-
 .result-head {
   margin: 0 0 14px;
   font-size: 0.95rem;
@@ -258,23 +214,6 @@ button.cell:hover {
   text-align: center;
 }
 
-.found-toggle {
-  border: 1px solid var(--border);
-  background: var(--code-bg);
-  color: var(--text-h);
-  border-radius: 6px;
-  padding: 5px 10px;
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-
-.found-toggle.on {
-  background: #2f8f55;
-  border-color: #7be0a0;
-  color: #f2fff5;
-  font-weight: 500;
-}
-
 /* ---- footer credits ---- */
 .credits {
   margin: 32px 0 12px;
@@ -282,22 +221,6 @@ button.cell:hover {
   border-top: 1px solid var(--border);
   font-size: 0.85rem;
   color: var(--text);
-}
-
-.credits-title {
-  margin: 0 0 4px;
-  font-weight: 600;
-  color: var(--text-h);
-}
-
-.credits-note {
-  margin: 0 0 8px;
-}
-
-.credits-list {
-  margin: 0;
-  padding-left: 1.2rem;
-  line-height: 1.6;
 }
 
 .credits-copyright {
@@ -314,28 +237,7 @@ button.cell:hover {
   text-decoration: underline;
 }
 
-/* ---- header bar (title + About link) ---- */
-.back-nav {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-.back-link {
-  border: 1px solid var(--border);
-  background: var(--code-bg);
-  color: var(--text-h);
-  border-radius: 6px;
-  padding: 4px 12px;
-  font-size: 0.9rem;
-  font-family: var(--sans);
-  text-decoration: none;
-}
-
-.back-link:hover {
-  filter: brightness(1.12);
-}
-
+/* ---- header bar ---- */
 .header-bar {
   display: flex;
   align-items: baseline;
@@ -343,7 +245,3 @@ button.cell:hover {
   gap: 12px;
   text-align: center;
 }
-
-/* The About link and page are dev-only and excluded from the production
-   single-file build, so their styles live in about/about.css (imported by the
-   component) — adding them here would ship them to the pure-HTML build. */

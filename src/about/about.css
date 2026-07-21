@@ -79,21 +79,11 @@
   }
 }
 
-/* The only class the markup still needs: the same pill serves as the page
-   toggle and the sidebar's close button. The child combinator keeps the
-   centring off the close button, which is nested inside the sidebar. */
-.about-link {
-  border: 1px solid var(--border);
-  background: var(--code-bg);
-  color: var(--text-h);
-  border-radius: 6px;
-  padding: 4px 12px;
-  font-size: 0.85rem;
-  cursor: pointer;
-  white-space: nowrap;
-}
+/* The only class the markup still needs beyond the shared .pill skin: the same
+   pill serves as the page toggle and the sidebar's close button, and the child
+   combinator keeps the centring off the close button nested inside the sidebar.
 
-/* fit-content is load-bearing: a button shrink-to-fits even at display: block,
+   fit-content is load-bearing: a button shrink-to-fits even at display: block,
    and auto margins only centre a box whose width is definite. */
 .app > .about-link {
   display: block;
