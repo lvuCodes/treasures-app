@@ -74,7 +74,7 @@ src/
 
 scripts/
   build-singlefile.mjs # Inlines the Vite build into one HTML file (+ subset-release guard)
-public/                # favicon + icons
+public/                # logo, favicons + icons
 ```
 
 The boundaries are real: deleting a feature is removing its folder plus its import/registration lines, no core edits. The build-time subset boundary is `dev/` — it is tree-shaken out of the production bundle (enforced by the single-file build's dev-sentinel guard).
@@ -87,6 +87,10 @@ For each item — expanded by count, considering both orientations — the solve
 
 - **Development**: React + Vite + TypeScript.
 - **Delivery**: `npm run build:singlefile` produces `dist/`, then inlines the JS and CSS into `treasures-app.html` at the project root — a single self-contained file (no server, no separate assets) that runs by double-click over `file://`. It still bundles the React runtime; it is "single-file", not vanilla JS. The file is generated locally and gitignored, not committed. The build fails if any dev-only code leaks into it.
+
+## License
+
+Copyright (C) 2026 lvuCodes. Free software licensed under the [GNU General Public License v3.0](LICENSE) — you may use, study, share, and modify it, provided derivative works carry the same license and preserve this notice.
 
 ## Sources
 

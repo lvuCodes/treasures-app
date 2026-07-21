@@ -15,7 +15,13 @@ const jsFile = files.find((f) => f.endsWith(".js"));
 const cssFile = files.find((f) => f.endsWith(".css"));
 if (!jsFile || !cssFile) throw new Error("dist/assets missing JS or CSS — run `npm run build` first");
 
-const js = readFileSync(join(assets, jsFile), "utf8");
+// The footer logo lives in public/, so its runtime URL resolves to a file that
+// does not ship with the single-file distribution — inline it as a data URI.
+const logo = readFileSync(join(dist, "logo.png")).toString("base64");
+const js = readFileSync(join(assets, jsFile), "utf8").replaceAll(
+  "./logo.png",
+  `data:image/png;base64,${logo}`,
+);
 const css = readFileSync(join(assets, cssFile), "utf8");
 
 let html = readFileSync(join(dist, "index.html"), "utf8");

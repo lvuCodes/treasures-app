@@ -298,6 +298,21 @@ button.cell:hover {
   line-height: 1.6;
 }
 
+.credits-copyright {
+  margin: 20px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+/* Inline with the notice text rather than a flex item, so the line stays one
+   run and wraps as prose on narrow screens. */
+.credits-logo {
+  margin-right: 8px;
+  vertical-align: -4px;
+  border-radius: 50%;
+}
+
 .credits a {
   color: var(--accent);
   text-decoration: none;

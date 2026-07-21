@@ -409,6 +409,23 @@ function App() {
             </a>
           </li>
         </ul>
+
+        <p className="credits-copyright">
+          <img className="credits-logo" src="./logo.png" alt="" width={20} height={20} />
+          © 2026{" "}
+          <a href="https://github.com/lvuCodes" target="_blank" rel="noreferrer noopener">
+            lvuCodes
+          </a>
+          . Free software under the{" "}
+          <a
+            href="https://github.com/lvuCodes/treasures-app/blob/main/LICENSE"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            GNU GPL v3
+          </a>
+          .
+        </p>
       </footer>
     </main>
   );

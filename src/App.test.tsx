@@ -126,3 +126,20 @@ describe("theme", () => {
     expect(document.documentElement.dataset.theme).toBe("homebrew");
   });
 });
+
+describe("footer copyright", () => {
+  it("carries the GPL notice and links the license", () => {
+    render(<App />);
+
+    const notice = screen.getByText(/© 2026/);
+    expect(notice.textContent).toContain("Free software under the");
+
+    const license = screen.getByRole("link", { name: "GNU GPL v3" });
+    expect(license.getAttribute("href")).toBe(
+      "https://github.com/lvuCodes/treasures-app/blob/main/LICENSE",
+    );
+    expect(screen.getByRole("link", { name: "lvuCodes" }).getAttribute("href")).toBe(
+      "https://github.com/lvuCodes",
+    );
+  });
+});
