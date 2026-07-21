@@ -1,10 +1,13 @@
 import "./back-link.css";
 
+export const DEFAULT_HREF = "https://lvucodes.github.io";
+export const DEFAULT_LABEL = "← lvuCodes";
+
 // Back link to the author's home page. Overlays the shell's top-left corner
 // (the shell is the positioned ancestor) so it never displaces the header.
 export function BackLink({
-  href = "https://lvucodes.github.io",
-  label = "← lvuCodes",
+  href = DEFAULT_HREF,
+  label = DEFAULT_LABEL,
 }: {
   href?: string;
   label?: string;
