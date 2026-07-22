@@ -94,6 +94,34 @@ describe("Picker — item grid view", () => {
     expect(screen.queryByText(/1×1/)).toBeNull();
   });
 
+  it("still shows a solver-deduced (located, not found) item at an empty override cell", () => {
+    // Map "solved" by deduction → item 1 located elsewhere but never recorded by
+    // the player. Tapping the empty cell must still let them overrule it.
+    renderPicker({
+      located: new Set([1]),
+      dug: new Map<string, DigCode>([["0,0", 0]]),
+    });
+    expect(screen.getByText(/1×1/)).toBeTruthy();
+  });
+
+  it("hides a player-found piece even at an empty override cell (exhausted)", () => {
+    // Item 5 (2×2) recorded elsewhere by the player → used up. The empty-cell
+    // override must NOT re-offer it.
+    renderPicker({
+      located: new Set([5]),
+      dug: new Map<string, DigCode>([
+        ["0,0", 0],
+        ["5,5", 5],
+      ]),
+    });
+    expect(screen.queryByText(/2×2/)).toBeNull();
+  });
+
+  it("keeps hiding a located item at an un-recorded cell (normal guidance intact)", () => {
+    renderPicker({ located: new Set([1]) });
+    expect(screen.queryByText(/1×1/)).toBeNull();
+  });
+
   it("closes on a backdrop click and on a backdrop context-menu", () => {
     const h = renderPicker();
     const backdrop = document.querySelector(".picker-backdrop")!;
@@ -120,5 +148,18 @@ describe("Picker — part selection view", () => {
   it("in force mode renders every part (no feasibility filtering)", () => {
     renderPicker({ pickerItem: 5, forceMode: true }); // 2×2 box
     expect(document.querySelectorAll("button.part-cell").length).toBeGreaterThan(0);
+  });
+
+  it("still filters infeasible parts at an empty override cell (no off-board ↔️)", () => {
+    // 1×3 anchored in the top-left corner: only the ⬅️ (extend right) and ⬆️
+    // (extend down) parts fit. The horizontal-middle ↔️ would run off-board, so
+    // the override must NOT offer it.
+    renderPicker({
+      pickerItem: 3, // 1×3 line
+      dug: new Map<string, DigCode>([["0,0", 0]]),
+    });
+    expect(screen.queryByText("↔️")).toBeNull();
+    expect(screen.getByText("⬅️")).toBeTruthy();
+    expect(document.querySelectorAll("button.part-cell").length).toBe(2);
   });
 });
