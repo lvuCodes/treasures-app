@@ -6,24 +6,6 @@ on:
   pull_request:
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run format:check
-      - run: npx tsc -b
-      - run: npm run test:coverage
-      # Also runs the dev-sentinel guard, which plain `npm run build` skips.
-      - run: npm run build:singlefile
-      - name: Assert the palette survived tree-shaking
-        run: grep -q -- '--item-1:' dist/assets/*.css
+  site-ci:
+    uses: lvuCodes/terminal-themes/.github/workflows/site-ci.yml@main

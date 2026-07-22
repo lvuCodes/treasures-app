@@ -13,6 +13,10 @@ dist-ssr
 coverage
 *.local
 
+# Playwright smoke artifacts
+playwright-report
+test-results
+
 # Dev-only exports written by the capture endpoint (vite.config.ts)
 captures
 

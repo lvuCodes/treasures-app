@@ -1,19 +1,11 @@
 .app {
-  /* The back link is pinned to the shell's padding-box top, so header spacing
-     has to be padding here rather than a margin on .header-bar — a margin there
-     collapses through the shell and drags the back link down with it. */
-  --shell-top: 24px;
-  --header-top: 36px;
-
   width: min(1120px, calc(100% - 32px));
-  margin: var(--shell-top) auto;
-  padding-top: calc(var(--header-top) - var(--shell-top));
+  margin: 36px auto;
   font-family: var(--sans);
   text-align: left;
   color: var(--text-h);
   box-sizing: border-box;
   caret-color: transparent;
-  position: relative;
 }
 
 .app h1 {
@@ -22,10 +14,9 @@
   margin: 12px auto;
 }
 
-/* The About sidebar is styled in about/about.css, the back link in
-   back-link/back-link.css, and the theme switcher (.theme-bar / .theme-btn) in
-   theme/ThemeSwitcher.css — each imported by the component that owns it. The
-   shared .pill skin those controls wear lives in index.css. */
+/* The About sidebar is styled in about/about.css; the back link and the theme
+   switcher (.theme-bar / .theme-btn) are styled by the shared @lvucodes/ui
+   package. The shared .pill skin those controls wear lives in index.css. */
 
 .hint {
   color: var(--text);
@@ -134,8 +125,6 @@ button.cell:hover {
    in inventory.css. */
 @media (max-width: 900px) {
   .app {
-    --shell-top: 12px;
-
     width: min(100%, calc(100% - 32px));
   }
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./App.css";
-import { ThemeSwitcher, useTheme } from "./theme";
+import { BackLink, ThemeSwitcher, useTheme } from "@lvucodes/ui";
 import { centerGrid, emptyGrid } from "./grid";
 import { SavedMaps, useSavedMaps } from "./saved-maps";
 import { InputGrid, useMapPaint } from "./map-input";
@@ -10,7 +10,6 @@ import { Picker, usePicker } from "./recorder";
 import { ResultGrid } from "./map-display";
 import { GopherFoot, MapStateExport, SavedMapsExport, gopherOverlay } from "./dev";
 import { About } from "./about";
-import { BackLink } from "./back-link";
 import { cellKey, nextDigCode, partGlyphForFootprint, type DigCode } from "./calculator/session";
 
 function App() {

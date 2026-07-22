@@ -10,8 +10,8 @@ describe("ITEM_TYPES", () => {
 
 describe("itemColor", () => {
   it("maps item 1 to the first hue and item ITEM_COLOR_COUNT to the last", () => {
-    expect(itemColor(1)).toBe("var(--item-1)");
-    expect(itemColor(ITEM_COLOR_COUNT)).toBe(`var(--item-${ITEM_COLOR_COUNT})`);
+    expect(itemColor(1)).toBe("var(--item-0)");
+    expect(itemColor(ITEM_COLOR_COUNT)).toBe(`var(--item-${ITEM_COLOR_COUNT - 1})`);
   });
 
   it("wraps past ITEM_COLOR_COUNT back to the first hue", () => {

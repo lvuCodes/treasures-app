@@ -27,7 +27,7 @@ export const ITEM_TYPES: ItemType[] = [
 export const KEYCAPS = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
 
 // Per-item ring / swatch colours. The actual hues live in CSS custom properties
-// (--item-1..--item-10) so they adapt per theme, ANSI-style: a bright palette on
+// (--item-0..--item-9) so they adapt per theme, ANSI-style: a bright palette on
 // dark themes, a darker one on light themes (see index.css). Max 10 items.
 export const ITEM_COLOR_COUNT = 10;
 
@@ -37,5 +37,5 @@ export const FORCED_COLOR = "var(--item-forced)";
 // The CSS custom-property reference for item `index` (1-based), wrapping every
 // ITEM_COLOR_COUNT items so an 11th item reuses the first hue.
 export function itemColor(index: number): string {
-  return `var(--item-${((index - 1) % ITEM_COLOR_COUNT) + 1})`;
+  return `var(--item-${(index - 1) % ITEM_COLOR_COUNT})`;
 }

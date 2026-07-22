@@ -1,7 +1,0 @@
-/* Back link. Imported by the BackLink component that owns it. Placement only —
-   the pill's skin is the shared .pill primitive in index.css. */
-.back-nav {
-  position: absolute;
-  top: 0;
-  left: 0;
-}

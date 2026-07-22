@@ -53,6 +53,12 @@ export default defineConfig({
     // Provide an in-memory localStorage for every test (see the setup file).
     // Test files opt into jsdom per-file via `// @vitest-environment jsdom`.
     setupFiles: ["./src/test-setup.ts"],
+    // Inline the package so Vitest transforms its bundled CSS imports; left
+    // externalized, Node's ESM loader chokes on `@lvucodes/ui`'s `.css` side effects.
+    server: { deps: { inline: ["@lvucodes/ui"] } },
+    // Unit tests live under src/; the Playwright e2e/*.spec.ts suite is driven by
+    // its own runner and must not be collected here.
+    include: ["src/**/*.test.{ts,tsx}"],
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],
