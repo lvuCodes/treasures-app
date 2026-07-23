@@ -45,7 +45,7 @@ export function InputGrid({ grid, paintDown, paintEnter, cellClick, dragSize }: 
                 onContextMenu={(e) => e.preventDefault()} // no context menu while drawing
                 aria-label={key}
               >
-                {grid[r][c] === 2 ? "🪨" : ""}
+                <span className="glyph">{grid[r][c] === 2 ? "🪨" : ""}</span>
               </button>
             );
           }),
