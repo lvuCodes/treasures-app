@@ -49,6 +49,7 @@ export default defineConfig({
   // (per the zero-dependency static-zip distribution constraint).
   base: "./",
   plugins: [react(), captureEndpoint()],
+  server: { port: 5818 },
   test: {
     // Provide an in-memory localStorage for every test (see the setup file).
     // Test files opt into jsdom per-file via `// @vitest-environment jsdom`.
