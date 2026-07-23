@@ -1,15 +1,15 @@
 # map-input
 
-The editable input map: draw terrain by clicking cells (wall → soil → rock → wall) and paint rectangles by dragging.
+The editable input map: draw terrain by tapping cells (wall → soil → rock → wall) and paint rectangles by dragging with a mouse or finger.
 
 ## Files
 
-| File             | Role                                                                                                                                                                                |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `useMapPaint.ts` | Click-cycle + drag-paint: the transient drag refs, the live size readout, and the window mouse-release listeners (torn down symmetrically). Calls the calculator's pure `fillRect`. |
-| `InputGrid.tsx`  | Presentational full-board grid + drag-size readout.                                                                                                                                 |
-| `map-input.css`  | The drag-size readout (`.drag-size`).                                                                                                                                               |
-| `index.ts`       | Barrel.                                                                                                                                                                             |
+| File             | Role                                                                                                                                                                                                                                                                                                                                     |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useMapPaint.ts` | Click-cycle + drag-paint unified on Pointer Events (one path for mouse and touch): the transient drag refs, the live size readout, pointer capture, and the window pointer-release listeners (torn down symmetrically). Resolves the cell under a moving finger via `document.elementFromPoint`. Calls the calculator's pure `fillRect`. |
+| `InputGrid.tsx`  | Presentational full-board grid + drag-size readout. Cells carry `data-r`/`data-c` for pointer-move cell resolution; `onPointerMove` lives on the grid container.                                                                                                                                                                         |
+| `map-input.css`  | The drag-size readout (`.drag-size`) and `touch-action: none` on the input cells so a paint gesture never fights the page's native scroll/zoom.                                                                                                                                                                                          |
+| `index.ts`       | Barrel.                                                                                                                                                                                                                                                                                                                                  |
 
 ## Notes
 

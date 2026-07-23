@@ -1,6 +1,13 @@
 /* Map-input-specific styles. The shared cell/grid substrate lives in the app
    shell stylesheet (used by both the input and result grids). */
 
+/* Suppress the browser's native scroll/zoom gesture while dragging a rectangle
+   inside the input grid, so a finger paint never scrolls the page (and a page
+   scroll never starts a stray paint). */
+.input-grid .cell {
+  touch-action: none;
+}
+
 /* Live drag-rectangle size readout, pinned just off the cursor. */
 .drag-size {
   position: fixed;

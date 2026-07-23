@@ -96,6 +96,13 @@ button.cell {
   cursor: pointer;
 }
 
+/* Colour-emoji glyphs render high of the cell's optical centre with line-height
+   1; nudge the glyph (never the button box) down so every terrain/state icon
+   sits centred. */
+.cell .glyph {
+  transform: translateY(0.06em);
+}
+
 button.cell:hover {
   box-shadow: inset 0 0 0 2px var(--accent);
 }

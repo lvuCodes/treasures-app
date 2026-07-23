@@ -53,6 +53,10 @@ export function ResultGrid({
   const forced = ok ? result.forced : null;
   const forcedItem = ok ? result.forcedItem : null;
 
+  // Once the puzzle is solved (or the map is fully located), the 0/red cells
+  // fade further — item locations lead, the rest of the map recedes.
+  const solved = result.solved || result.kind === "complete";
+
   const box = boundingBox(grid);
   const rows = range(box.r0, box.r1);
   const cols = range(box.c0, box.c1);
@@ -60,7 +64,7 @@ export function ResultGrid({
   return (
     <>
       <div
-        className="grid"
+        className={"grid" + (solved ? " solved" : "")}
         role="grid"
         aria-label="map"
         style={{ "--cols": cols.length } as CSSProperties}
@@ -117,6 +121,7 @@ export function ResultGrid({
               `cell terrain-${v}` +
               (isRec ? " rec" : "") +
               (isDug ? " dug" : "") +
+              (isEmpty ? " empty" : "") +
               (knownItem != null ? " item-known" : "") +
               (isForcedUnknown ? " forced" : "") +
               (isTentative ? " tentative" : "") +
@@ -147,7 +152,7 @@ export function ResultGrid({
                 onContextMenu={(e) => onCellContextMenu(e, r, c)}
                 aria-label={key}
               >
-                {over?.node ?? coreContent}
+                <span className="glyph">{over?.node ?? coreContent}</span>
               </button>
             );
           }),

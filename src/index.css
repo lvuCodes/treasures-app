@@ -23,6 +23,10 @@
   /* recommended dig — a deeper accent so hammer cells pop vs the pale soil */
   --accent-edge: color-mix(in srgb, var(--accent) 58%, #000 42%);
   /* accent border */
+  --cell-fade-searching: 0.6;
+  /* 0/red cells recede like a disabled button while searching… */
+  --cell-fade-solved: 0.32;
+  /* …and fade further once solved, so located cells lead */
 
   --sans: "Belanosima", system-ui, "Segoe UI", Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;

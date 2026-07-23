@@ -46,6 +46,25 @@ button.cell.nodig {
   box-shadow: inset 0 0 0 3px #e0392b;
 }
 
+/* Non-goal cells: revealed-empty 0-cells and red eliminated cells. They stay
+   clickable but recede like a disabled button so viable/located cells lead;
+   hover restores the full-strength "enabled" look. Once the puzzle is solved
+   (or the map is fully located) they fade further still. */
+.cell.empty,
+.cell.eliminated {
+  opacity: var(--cell-fade-searching);
+}
+
+.grid.solved .cell.empty,
+.grid.solved .cell.eliminated {
+  opacity: var(--cell-fade-solved);
+}
+
+button.cell.empty:hover,
+button.cell.eliminated:hover {
+  opacity: 1;
+}
+
 /* Possible edge of a found-but-unresolved item — ringed orange, glyph 🟠/🟧.
    Reserved ("barked off") until another recorded piece pins the placement. */
 .cell.tentative {
