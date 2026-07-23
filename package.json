@@ -46,7 +46,7 @@
     "prettier": "^3.9.5",
     "stylelint": "^17.14.1",
     "typescript": "~6.0.2",
-    "vite": "^8.0.12",
+    "vite": "^8.1.5",
     "vitest": "^4.1.7"
   }
 }
