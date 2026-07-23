@@ -1,12 +1,35 @@
 // @vitest-environment jsdom
 import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { useMapPaint } from "./useMapPaint";
-import type { MouseEvent } from "react";
+import type { PointerEvent } from "react";
 
-// A minimal mouse-event stub carrying only what the hook reads.
-const mouse = (over: Partial<MouseEvent> = {}) =>
-  ({ preventDefault: () => {}, clientX: 0, clientY: 0, ...over }) as MouseEvent;
+// A minimal pointer-event stub carrying only what the hook reads. `setPointerCapture`
+// is a no-op so the down handler works without a real captured element.
+const ptr = (over: Partial<PointerEvent> = {}) =>
+  ({
+    preventDefault: () => {},
+    pointerId: 1,
+    clientX: 0,
+    clientY: 0,
+    buttons: 1,
+    currentTarget: { setPointerCapture: () => {} },
+    ...over,
+  }) as unknown as PointerEvent;
+
+// paintMove resolves the cell under the pointer via document.elementFromPoint;
+// point it at a cell carrying the data-r/data-c the grid renders.
+// jsdom has no layout engine, so elementFromPoint isn't implemented; stub it.
+function pointAt(r: number, c: number) {
+  const el = document.createElement("button");
+  el.dataset.r = String(r);
+  el.dataset.c = String(c);
+  document.elementFromPoint = () => el;
+}
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 // Drive the hook over a mutable grid, re-rendering with the latest value after
 // each setGrid so the ref-based base snapshot sees fresh data.
@@ -42,18 +65,19 @@ describe("useMapPaint", () => {
   it("does nothing while locked", () => {
     const { hook, getGrid } = setup(grid3(), true);
     act(() => {
-      hook.result.current.paintDown(mouse(), 0, 0);
+      hook.result.current.paintDown(ptr(), 0, 0);
       hook.result.current.cellClick(0, 0);
     });
     expect(getGrid()).toEqual(grid3());
     expect(hook.result.current.dragSize).toBeNull();
   });
 
-  it("fills a rectangle on drag and exposes a live size readout", () => {
+  it("fills a rectangle on a mouse drag and exposes a live size readout", () => {
     const { hook, rerender, getGrid } = setup(grid3());
-    act(() => hook.result.current.paintDown(mouse(), 0, 0));
+    act(() => hook.result.current.paintDown(ptr(), 0, 0));
     rerender();
-    act(() => hook.result.current.paintEnter(mouse({ clientX: 5, clientY: 5 }), 2, 2));
+    pointAt(2, 2);
+    act(() => hook.result.current.paintMove(ptr({ clientX: 5, clientY: 5 })));
     rerender();
 
     // Whole 3×3 filled with the start cell's next state (0→1).
@@ -65,11 +89,40 @@ describe("useMapPaint", () => {
     expect(hook.result.current.dragSize).toMatchObject({ w: 3, h: 3, x: 5, y: 5 });
   });
 
+  it("paints the identical rectangle across a touch drag, stepping to the next state", () => {
+    // A touch drag is the same pointer path: down on the start cell, move across
+    // the region resolving each cell under the finger, then release off-window.
+    const { hook, rerender, getGrid } = setup(grid3());
+    act(() => hook.result.current.paintDown(ptr({ pointerId: 7, clientX: 1, clientY: 1 }), 0, 0));
+    rerender();
+
+    // Finger travels 0,0 → 1,1 → 2,2; the rectangle re-fills from the clean base
+    // each step, so it's always a rectangle, not a trail.
+    pointAt(1, 1);
+    act(() => hook.result.current.paintMove(ptr({ pointerId: 7, clientX: 4, clientY: 4 })));
+    rerender();
+    pointAt(2, 2);
+    act(() => hook.result.current.paintMove(ptr({ pointerId: 7, clientX: 8, clientY: 8 })));
+    rerender();
+
+    expect(getGrid()).toEqual([
+      [1, 1, 1],
+      [1, 1, 1],
+      [1, 1, 1],
+    ]);
+    expect(hook.result.current.dragSize).toMatchObject({ w: 3, h: 3, x: 8, y: 8 });
+
+    // Finger lifts anywhere (touch has no hover) — the window pointerup ends it.
+    act(() => window.dispatchEvent(new Event("pointerup")));
+    expect(hook.result.current.dragSize).toBeNull();
+  });
+
   it("suppresses the click-cycle that ends a drag", () => {
     const { hook, rerender, getGrid } = setup(grid3());
-    act(() => hook.result.current.paintDown(mouse(), 0, 0));
+    act(() => hook.result.current.paintDown(ptr(), 0, 0));
     rerender();
-    act(() => hook.result.current.paintEnter(mouse(), 1, 0));
+    pointAt(1, 0);
+    act(() => hook.result.current.paintMove(ptr()));
     rerender();
     const afterDrag = getGrid().map((r) => [...r]);
 
@@ -77,15 +130,16 @@ describe("useMapPaint", () => {
     expect(getGrid()).toEqual(afterDrag);
   });
 
-  it("clears the drag readout on window mouseup", () => {
+  it("clears the drag readout on window pointerup", () => {
     const { hook, rerender } = setup(grid3());
-    act(() => hook.result.current.paintDown(mouse(), 0, 0));
+    act(() => hook.result.current.paintDown(ptr(), 0, 0));
     rerender();
-    act(() => hook.result.current.paintEnter(mouse({ clientX: 3 }), 0, 2));
+    pointAt(0, 2);
+    act(() => hook.result.current.paintMove(ptr({ clientX: 3 })));
     rerender();
     expect(hook.result.current.dragSize).not.toBeNull();
 
-    act(() => window.dispatchEvent(new Event("mouseup")));
+    act(() => window.dispatchEvent(new Event("pointerup")));
     expect(hook.result.current.dragSize).toBeNull();
   });
 });

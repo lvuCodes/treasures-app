@@ -199,7 +199,7 @@ function App() {
             <InputGrid
               grid={grid}
               paintDown={paint.paintDown}
-              paintEnter={paint.paintEnter}
+              paintMove={paint.paintMove}
               cellClick={paint.cellClick}
               dragSize={paint.dragSize}
             />

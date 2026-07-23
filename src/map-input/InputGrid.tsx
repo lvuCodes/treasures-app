@@ -1,4 +1,4 @@
-import type { CSSProperties, MouseEvent } from "react";
+import type { CSSProperties, PointerEvent } from "react";
 import { SIZE, range } from "../grid";
 import { cellKey } from "../calculator/session";
 import type { DragSize } from "./useMapPaint";
@@ -6,8 +6,8 @@ import "./map-input.css";
 
 interface InputGridProps {
   grid: number[][];
-  paintDown: (e: MouseEvent, r: number, c: number) => void;
-  paintEnter: (e: MouseEvent, r: number, c: number) => void;
+  paintDown: (e: PointerEvent, r: number, c: number) => void;
+  paintMove: (e: PointerEvent) => void;
   cellClick: (r: number, c: number) => void;
   dragSize: DragSize | null;
 }
@@ -16,7 +16,7 @@ interface InputGridProps {
 // click and paint rectangles on drag. Presentational — all paint state + handlers
 // come from useMapPaint. The live drag-size readout is a fixed-position overlay,
 // so its position in the tree doesn't matter.
-export function InputGrid({ grid, paintDown, paintEnter, cellClick, dragSize }: InputGridProps) {
+export function InputGrid({ grid, paintDown, paintMove, cellClick, dragSize }: InputGridProps) {
   const cells = range(0, SIZE - 1);
   return (
     <>
@@ -27,10 +27,11 @@ export function InputGrid({ grid, paintDown, paintEnter, cellClick, dragSize }: 
         Click and drag to make rectangle inputs.
       </p>
       <div
-        className="grid"
+        className="grid input-grid"
         role="grid"
         aria-label="map"
         style={{ "--cols": SIZE } as CSSProperties}
+        onPointerMove={paintMove}
       >
         {cells.map((r) =>
           cells.map((c) => {
@@ -39,8 +40,9 @@ export function InputGrid({ grid, paintDown, paintEnter, cellClick, dragSize }: 
               <button
                 key={key}
                 className={`cell terrain-${grid[r][c]}`}
-                onMouseDown={(e) => paintDown(e, r, c)}
-                onMouseEnter={(e) => paintEnter(e, r, c)}
+                data-r={r}
+                data-c={c}
+                onPointerDown={(e) => paintDown(e, r, c)}
                 onClick={() => cellClick(r, c)}
                 onContextMenu={(e) => e.preventDefault()} // no context menu while drawing
                 aria-label={key}
