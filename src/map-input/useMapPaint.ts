@@ -32,6 +32,9 @@ export function useMapPaint({ grid, setGrid, locked }: MapPaintArgs) {
   const dragged = useRef(false);
   const dragStart = useRef<[number, number] | null>(null);
   const baseGrid = useRef<number[][] | null>(null);
+  // Set when a pointer release already cycled the cell, so the synthetic click
+  // that follows it is swallowed instead of cycling a second time.
+  const tapped = useRef(false);
   // The next state in the click cycle from the start cell — the drag steps the
   // whole rectangle one stage.
   const fillValue = useRef(1);
@@ -79,6 +82,7 @@ export function useMapPaint({ grid, setGrid, locked }: MapPaintArgs) {
     e.currentTarget.setPointerCapture?.(e.pointerId);
     painting.current = true;
     dragged.current = false;
+    tapped.current = false;
     dragStart.current = [r, c];
     baseGrid.current = grid.map((row) => [...row]);
     fillValue.current = (grid[r][c] + 1) % 3; // wall→soil→rock→wall, matching click cycle
@@ -116,7 +120,30 @@ export function useMapPaint({ grid, setGrid, locked }: MapPaintArgs) {
     });
   }
 
+  // Commit a tap on release rather than on `click`. iOS Safari treats two rapid
+  // taps on nearby targets as one double-tap gesture and dispatches the second
+  // `click` against the FIRST tap's element, so a click-driven cycle lands on the
+  // wrong cell. `pointerdown` captured the pointer, so the release is always the
+  // cell the finger actually hit — and the cycle uses the drag-start cell, not
+  // whatever the event happens to be retargeted to.
+  function paintUp(e: PointerEvent) {
+    if (locked || !painting.current) return;
+    const s = dragStart.current;
+    painting.current = false;
+    setDragSize(null);
+    if (dragged.current || !s || e.button !== 0) return;
+    tapped.current = true;
+    cycleCell(s[0], s[1]);
+  }
+
+  // The click that trails a pointer sequence is always redundant — the release
+  // (or the drag) already resolved it. A click with no pointer sequence behind
+  // it is a keyboard activation, and still cycles.
   function cellClick(r: number, c: number) {
+    if (tapped.current) {
+      tapped.current = false;
+      return;
+    }
     if (dragged.current) {
       dragged.current = false; // this click ends a drag — don't also cycle
       return;
@@ -124,5 +151,5 @@ export function useMapPaint({ grid, setGrid, locked }: MapPaintArgs) {
     cycleCell(r, c);
   }
 
-  return { paintDown, paintMove, cellClick, dragSize };
+  return { paintDown, paintMove, paintUp, cellClick, dragSize };
 }

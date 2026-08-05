@@ -13,6 +13,7 @@ const ptr = (over: Partial<PointerEvent> = {}) =>
     clientX: 0,
     clientY: 0,
     buttons: 1,
+    button: 0,
     currentTarget: { setPointerCapture: () => {} },
     ...over,
   }) as unknown as PointerEvent;
@@ -128,6 +129,67 @@ describe("useMapPaint", () => {
 
     act(() => hook.result.current.cellClick(0, 0)); // ends the drag, must not cycle
     expect(getGrid()).toEqual(afterDrag);
+  });
+
+  it("cycles the cell on pointer release, then swallows the trailing click", () => {
+    const { hook, rerender, getGrid } = setup(grid3());
+    act(() => hook.result.current.paintDown(ptr(), 1, 1));
+    rerender();
+    act(() => hook.result.current.paintUp(ptr()));
+    rerender();
+    expect(getGrid()[1][1]).toBe(1);
+
+    act(() => hook.result.current.cellClick(1, 1)); // the click that trails the tap
+    expect(getGrid()[1][1]).toBe(1);
+  });
+
+  it("cycles the pointer-down cell even when the click is retargeted elsewhere", () => {
+    // The mobile-Safari symptom: two rapid taps, and the browser dispatches the
+    // second click against the FIRST cell. The release already committed the
+    // correct cell, and the retargeted click is swallowed.
+    const { hook, rerender, getGrid } = setup(grid3());
+    act(() => hook.result.current.paintDown(ptr(), 0, 0));
+    rerender();
+    act(() => hook.result.current.paintUp(ptr()));
+    rerender();
+    act(() => hook.result.current.paintDown(ptr(), 0, 1));
+    rerender();
+    act(() => hook.result.current.paintUp(ptr()));
+    rerender();
+    act(() => hook.result.current.cellClick(0, 0)); // Safari's stale-target click
+    rerender();
+
+    expect(getGrid()[0][0]).toBe(1);
+    expect(getGrid()[0][1]).toBe(1);
+  });
+
+  it("still cycles on a click with no pointer sequence (keyboard activation)", () => {
+    const { hook, getGrid } = setup(grid3());
+    act(() => hook.result.current.cellClick(2, 2));
+    expect(getGrid()[2][2]).toBe(1);
+  });
+
+  it("does not cycle when a drag ends on release", () => {
+    const { hook, rerender, getGrid } = setup(grid3());
+    act(() => hook.result.current.paintDown(ptr(), 0, 0));
+    rerender();
+    pointAt(0, 1);
+    act(() => hook.result.current.paintMove(ptr()));
+    rerender();
+    const afterDrag = getGrid().map((row) => [...row]);
+
+    act(() => hook.result.current.paintUp(ptr()));
+    rerender();
+    expect(getGrid()).toEqual(afterDrag);
+  });
+
+  it("does not cycle on a non-primary button release", () => {
+    const { hook, rerender, getGrid } = setup(grid3());
+    act(() => hook.result.current.paintDown(ptr(), 1, 1));
+    rerender();
+    act(() => hook.result.current.paintUp(ptr({ button: 2 })));
+    rerender();
+    expect(getGrid()).toEqual(grid3());
   });
 
   it("clears the drag readout on window pointerup", () => {

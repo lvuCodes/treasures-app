@@ -8,6 +8,7 @@ interface InputGridProps {
   grid: number[][];
   paintDown: (e: PointerEvent, r: number, c: number) => void;
   paintMove: (e: PointerEvent) => void;
+  paintUp: (e: PointerEvent) => void;
   cellClick: (r: number, c: number) => void;
   dragSize: DragSize | null;
 }
@@ -16,7 +17,14 @@ interface InputGridProps {
 // click and paint rectangles on drag. Presentational — all paint state + handlers
 // come from useMapPaint. The live drag-size readout is a fixed-position overlay,
 // so its position in the tree doesn't matter.
-export function InputGrid({ grid, paintDown, paintMove, cellClick, dragSize }: InputGridProps) {
+export function InputGrid({
+  grid,
+  paintDown,
+  paintMove,
+  paintUp,
+  cellClick,
+  dragSize,
+}: InputGridProps) {
   const cells = range(0, SIZE - 1);
   return (
     <>
@@ -43,6 +51,7 @@ export function InputGrid({ grid, paintDown, paintMove, cellClick, dragSize }: I
                 data-r={r}
                 data-c={c}
                 onPointerDown={(e) => paintDown(e, r, c)}
+                onPointerUp={paintUp}
                 onClick={() => cellClick(r, c)}
                 onContextMenu={(e) => e.preventDefault()} // no context menu while drawing
                 aria-label={key}
