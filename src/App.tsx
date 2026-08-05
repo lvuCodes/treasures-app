@@ -202,6 +202,7 @@ function App() {
               grid={grid}
               paintDown={paint.paintDown}
               paintMove={paint.paintMove}
+              paintUp={paint.paintUp}
               cellClick={paint.cellClick}
               dragSize={paint.dragSize}
             />

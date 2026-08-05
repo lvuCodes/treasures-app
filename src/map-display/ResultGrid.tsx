@@ -1,4 +1,5 @@
-import type { CSSProperties, MouseEvent, ReactNode } from "react";
+import { useRef } from "react";
+import type { CSSProperties, MouseEvent, PointerEvent, ReactNode } from "react";
 import { boundingBox, range } from "../grid";
 import { cellKey, type DigCode, type Evaluation } from "../calculator/session";
 import { FORCED_COLOR, KEYCAPS, itemColor } from "../inventory";
@@ -47,6 +48,14 @@ export function ResultGrid({
   onCellContextMenu,
   overlaySlot,
 }: ResultGridProps) {
+  // A cell acts on pointer release, not on `click`: iOS Safari dispatches the
+  // second of two rapid clicks against the first one's target, so a click-driven
+  // board landed the hit on the previously-tapped cell. The pointer is captured
+  // on down, so the release always belongs to the cell that was actually hit.
+  // The flag swallows the redundant click that trails the release; a click with
+  // no pointer sequence behind it is a keyboard activation and still fires.
+  const tapped = useRef(false);
+
   const ok = result.kind === "ok";
   const recommended = ok ? result.top : null;
   const eliminated = ok ? result.eliminated : null;
@@ -148,7 +157,22 @@ export function ResultGrid({
                 key={key}
                 className={cls}
                 style={style}
-                onClick={(e) => onCellClick(e, r, c)}
+                onPointerDown={(e: PointerEvent<HTMLButtonElement>) => {
+                  tapped.current = false;
+                  e.currentTarget.setPointerCapture?.(e.pointerId);
+                }}
+                onPointerUp={(e: PointerEvent<HTMLButtonElement>) => {
+                  if (e.button !== 0) return;
+                  tapped.current = true;
+                  onCellClick(e, r, c);
+                }}
+                onClick={(e) => {
+                  if (tapped.current) {
+                    tapped.current = false;
+                    return;
+                  }
+                  onCellClick(e, r, c);
+                }}
                 onContextMenu={(e) => onCellContextMenu(e, r, c)}
                 aria-label={key}
               >
