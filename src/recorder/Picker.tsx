@@ -11,6 +11,10 @@ interface PickerProps {
   grid: number[][];
   dug: Map<string, DigCode>;
   located: Set<number>; // item indices whose footprint is pinned
+  // The item the solver has determined owns the anchor cell (a confirmed
+  // footprint, or a guaranteed cell whose owner is deduced); null when the
+  // owner is still unknown. Lets the player confirm that deduction by hand.
+  anchorItem: number | null;
   footprints: Map<number, string[]>;
   // Non-null → the part-selection sub-view for that item; null → the item grid.
   pickerItem: number | null;
@@ -38,6 +42,7 @@ export function Picker({
   grid,
   dug,
   located,
+  anchorItem,
   footprints,
   pickerItem,
   forceMode,
@@ -100,8 +105,14 @@ export function Picker({
                 if (!forceMode && found.has(i + 1) && !already) return null;
                 if (!forceMode) {
                   // Hide a solver-pinned (located) piece — UNLESS this is an
-                  // empty-cell override, where the player overrules the deduction.
-                  if (located.has(i + 1) && !already && !emptyOverride) return null;
+                  // empty-cell override, where the player overrules the
+                  // deduction, or this is the very cell the solver assigned to
+                  // it. A solved board is one whose locations are all deduced
+                  // but none confirmed by the player; hiding the owner there
+                  // left no way (least of all on mobile, with no right-click) to
+                  // say "yes, this cell is that item".
+                  if (located.has(i + 1) && !already && !emptyOverride && anchorItem !== i + 1)
+                    return null;
                   // Never offer a piece that cannot physically fit here (walls /
                   // edges / other items). Applies even at an empty override — only
                   // viable pieces show.

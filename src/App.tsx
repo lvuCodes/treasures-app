@@ -171,6 +171,14 @@ function App() {
     saved.setStatus("");
   }
 
+  // The item the solver has determined owns the recorder's anchor cell — from a
+  // confirmed footprint, or from a guaranteed cell whose owner is deduced.
+  function anchorItem(): number | null {
+    if (!picker.anchor || !result) return null;
+    const { r, c } = picker.anchor;
+    return result.confirmed[r]?.[c]?.confirmedItem ?? result.forcedItem.get(cellKey(r, c)) ?? null;
+  }
+
   // Payload for the dev map-state capture: the full board + recorded state as
   // [key, value] pairs (rebuildable with new Map(...)). Built lazily at export.
   const mapStatePayload = () => ({
@@ -363,6 +371,7 @@ function App() {
           grid={grid}
           dug={dug}
           located={result?.located ?? new Set()}
+          anchorItem={anchorItem()}
           footprints={footprints}
           pickerItem={picker.pickerItem}
           forceMode={picker.forceMode}

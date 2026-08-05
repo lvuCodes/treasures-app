@@ -36,6 +36,7 @@ function renderPicker(over: Partial<Parameters<typeof Picker>[0]> = {}) {
       grid={soil()}
       dug={new Map<string, DigCode>()}
       located={new Set<number>()}
+      anchorItem={null}
       footprints={new Map<number, string[]>()}
       pickerItem={null}
       forceMode={false}
@@ -120,6 +121,33 @@ describe("Picker — item grid view", () => {
   it("keeps hiding a located item at an un-recorded cell (normal guidance intact)", () => {
     renderPicker({ located: new Set([1]) });
     expect(screen.queryByText(/1×1/)).toBeNull();
+  });
+
+  // Issues #15 / #29: on a solved board every location is deduced but none is
+  // confirmed by the player. Hiding the deduced owner left no way to mark the
+  // cell as belonging to that item — the only route on mobile, with no
+  // right-click and no plain-cycle fallback on a determined cell.
+  it("offers the deduced owner of the anchor cell even though it is located", () => {
+    renderPicker({ located: new Set([1]), anchorItem: 1 });
+    expect(screen.getByText(/1×1/)).toBeTruthy();
+  });
+
+  it("offers only that owner, not every located item on a solved board", () => {
+    renderPicker({ located: new Set([1, 2]), anchorItem: 1 });
+    expect(screen.getByText(/1×1/)).toBeTruthy();
+    expect(screen.queryByText(/1×2/)).toBeNull();
+  });
+
+  it("applies the deduced owner straight through for a 1×1 piece", () => {
+    const h = renderPicker({ located: new Set([1]), anchorItem: 1 });
+    fireEvent.click(screen.getByText(/1×1/));
+    expect(h.onApplyPart).toHaveBeenCalledWith(1, undefined);
+  });
+
+  it("drills into part selection for a multi-cell deduced owner", () => {
+    const h = renderPicker({ located: new Set([2]), anchorItem: 2 });
+    fireEvent.click(screen.getByText(/1×2/));
+    expect(h.onSelectItem).toHaveBeenCalledWith(2);
   });
 
   it("closes on a backdrop click and on a backdrop context-menu", () => {
