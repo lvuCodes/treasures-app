@@ -77,12 +77,7 @@ export function Picker({
     >
       <div
         className="picker"
-        style={{
-          left: anchor.x,
-          top: anchor.y,
-          // grow leftward from the anchor when flipped (keeps it on-screen)
-          transform: anchor.openLeft ? "translateX(-100%)" : undefined,
-        }}
+        style={{ left: anchor.x, top: anchor.y }}
         onClick={(e) => e.stopPropagation()}
       >
         {pickerItem === null ? (

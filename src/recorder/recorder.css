@@ -10,7 +10,11 @@
 .picker {
   position: fixed;
   min-width: 200px;
+  /* Both caps mirror PICKER_MAX_WIDTH / PICKER_MAX_HEIGHT, which the anchor
+     clamp uses to keep every edge inside the map region. */
   max-width: 280px;
+  max-height: 300px;
+  overflow-y: auto;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;

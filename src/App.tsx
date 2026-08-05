@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import "./App.css";
 import { BackLink, ThemeSwitcher, useTheme } from "@lvucodes/ui";
 import { centerGrid, emptyGrid } from "./grid";
@@ -44,6 +44,8 @@ function App() {
 
   // Recorder modal (position, item/part selection, generic force-mode + tag).
   const picker = usePicker();
+  // The map region (grid + legend) the recorder modal is confined to.
+  const mapRegion = useRef<HTMLDivElement>(null);
   const [theme, setTheme] = useTheme();
 
   // Terrain drawing for the input map (click-cycle + drag-paint).
@@ -137,7 +139,7 @@ function App() {
   function openPicker(e: React.MouseEvent, r: number, c: number) {
     e.preventDefault();
     if (!locked || repick || grid[r][c] === 0) return;
-    picker.open(e, r, c);
+    picker.open(e, r, c, mapRegion.current?.getBoundingClientRect() ?? null);
   }
 
   // Clear the input map back to all walls and reset item counts to zero.
@@ -205,15 +207,17 @@ function App() {
             />
           ) : (
             result && (
-              <ResultGrid
-                grid={grid}
-                result={result}
-                dug={dug}
-                overlay={overlay}
-                onCellClick={cycleDig}
-                onCellContextMenu={openPicker}
-                overlaySlot={import.meta.env.DEV ? gopherOverlay : undefined}
-              />
+              <div className="map-region" ref={mapRegion}>
+                <ResultGrid
+                  grid={grid}
+                  result={result}
+                  dug={dug}
+                  overlay={overlay}
+                  onCellClick={cycleDig}
+                  onCellContextMenu={openPicker}
+                  overlaySlot={import.meta.env.DEV ? gopherOverlay : undefined}
+                />
+              </div>
             )
           )}
 

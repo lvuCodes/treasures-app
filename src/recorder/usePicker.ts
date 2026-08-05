@@ -1,19 +1,56 @@
 import { useState } from "react";
 import type { MouseEvent } from "react";
 
-// A recorder modal open over cell (r,c), anchored at viewport (x,y). `openLeft`
-// flips it to grow leftward from the anchor when there isn't room on the right.
+// A recorder modal open over cell (r,c), pinned at viewport (x,y) — already
+// clamped so the whole modal stays inside the map region.
 export interface PickerAnchor {
   r: number;
   c: number;
   x: number;
   y: number;
-  openLeft: boolean;
 }
 
-// Widest the recorder can get (matches .picker max-width) — used to decide
-// whether it would overflow the right edge and should flip left instead.
+// The rectangle the modal must stay inside — the map region (grid + legend).
+export interface PickerBounds {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
+
+// Largest the recorder can get (matches .picker max-width / max-height) — used
+// to clamp the anchor so no edge of the modal escapes the map region.
 export const PICKER_MAX_WIDTH = 280;
+export const PICKER_MAX_HEIGHT = 300;
+// Breathing room kept between the modal and the edge it is clamped against.
+export const PICKER_MARGIN = 8;
+
+// Pin the modal's top-left so its full box sits inside `bounds`, insetting by
+// PICKER_MARGIN. A bounds narrower/shorter than the modal pins it to the
+// leading edge (overflowing the trailing one is unavoidable and less bad than
+// leaving the title and item grid off-screen).
+export function clampAnchor(x: number, y: number, bounds: PickerBounds): { x: number; y: number } {
+  const clamp = (v: number, lo: number, hi: number) =>
+    hi < lo ? lo : Math.min(Math.max(v, lo), hi);
+  return {
+    x: clamp(x, bounds.left + PICKER_MARGIN, bounds.right - PICKER_MARGIN - PICKER_MAX_WIDTH),
+    y: clamp(y, bounds.top + PICKER_MARGIN, bounds.bottom - PICKER_MARGIN - PICKER_MAX_HEIGHT),
+  };
+}
+
+// The map region the modal is confined to: the caller's rect (grid + legend)
+// intersected with the viewport, so a region scrolled partly out of view still
+// yields an on-screen anchor.
+export function pickerBounds(region: PickerBounds | null): PickerBounds {
+  const view = { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
+  if (!region) return view;
+  return {
+    left: Math.max(region.left, view.left),
+    top: Math.max(region.top, view.top),
+    right: Math.min(region.right, view.right),
+    bottom: Math.min(region.bottom, view.bottom),
+  };
+}
 
 // State for the right-click recorder modal. `forceMode` is the feature-agnostic
 // "trust the user over the solver" flag (skip feasibility filtering); `overlayTag`
@@ -26,10 +63,9 @@ export function usePicker() {
   const [forceMode, setForceMode] = useState(false);
   const [overlayTag, setOverlayTag] = useState<string | undefined>(undefined);
 
-  function open(e: MouseEvent, r: number, c: number) {
-    // Flip leftward when the modal would run past the right edge of the viewport.
-    const openLeft = e.clientX + PICKER_MAX_WIDTH > window.innerWidth;
-    setAnchor({ r, c, x: e.clientX, y: e.clientY, openLeft });
+  function open(e: MouseEvent, r: number, c: number, region: PickerBounds | null = null) {
+    const { x, y } = clampAnchor(e.clientX, e.clientY, pickerBounds(region));
+    setAnchor({ r, c, x, y });
     setPickerItem(null);
     setForceMode(false);
     setOverlayTag(undefined);
