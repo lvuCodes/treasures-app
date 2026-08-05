@@ -116,6 +116,35 @@ describe("Picker — item grid view", () => {
     expect(screen.queryByText(/2×2/)).toBeNull();
   });
 
+  // Issue #27: a found piece whose placement is still ambiguous reserves an
+  // orange "possible edge" region. Hiding it outright left no way to record a
+  // second part and settle where it actually sits.
+  it("offers a found-but-unlocated piece over a cell in its candidate region", () => {
+    renderPicker({
+      // item 5 (2×2) recorded at 5,5 but not yet pinned; 0,0 is in its union
+      dug: new Map<string, DigCode>([["5,5", 5]]),
+      footprints: new Map([[5, ["5,5", "0,0"]]]),
+    });
+    expect(screen.getByText(/2×2/)).toBeTruthy();
+  });
+
+  it("hides a found-but-unlocated piece over a cell outside its candidate region", () => {
+    renderPicker({
+      dug: new Map<string, DigCode>([["5,5", 5]]),
+      footprints: new Map([[5, ["5,5", "5,6"]]]), // anchor 0,0 is not in the union
+    });
+    expect(screen.queryByText(/2×2/)).toBeNull();
+  });
+
+  it("hides a found piece once its placement is pinned, even inside its footprint", () => {
+    renderPicker({
+      located: new Set([5]),
+      dug: new Map<string, DigCode>([["5,5", 5]]),
+      footprints: new Map([[5, ["5,5", "0,0"]]]),
+    });
+    expect(screen.queryByText(/2×2/)).toBeNull();
+  });
+
   it("keeps hiding a located item at an un-recorded cell (normal guidance intact)", () => {
     renderPicker({ located: new Set([1]) });
     expect(screen.queryByText(/1×1/)).toBeNull();
