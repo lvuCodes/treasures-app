@@ -16,7 +16,6 @@ const anchor = (over: Partial<PickerAnchor> = {}): PickerAnchor => ({
   c: 0,
   x: 10,
   y: 10,
-  openLeft: false,
   ...over,
 });
 
