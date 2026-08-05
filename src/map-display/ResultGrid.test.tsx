@@ -88,3 +88,54 @@ describe("ResultGrid non-goal cell styling (issue #17)", () => {
     expect(grid().className).toContain("solved");
   });
 });
+
+// Mobile Safari coalesces two rapid taps into a double-tap gesture and dispatches
+// the second `click` against the FIRST tap's target, so a click-driven board
+// landed the hit on the previously-tapped cell (issue #18).
+describe("ResultGrid rapid-tap handling (issue #18)", () => {
+  const tap = (el: HTMLElement) => {
+    fireEvent.pointerDown(el, { pointerId: 1, button: 0 });
+    fireEvent.pointerUp(el, { pointerId: 1, button: 0 });
+  };
+
+  it("acts on pointer release and swallows the click that trails it", () => {
+    const onCellClick = vi.fn();
+    renderGrid({}, onCellClick);
+    const cell = byKey(0, 1);
+    tap(cell);
+    expect(onCellClick).toHaveBeenCalledTimes(1);
+    expect(onCellClick.mock.calls[0].slice(1)).toEqual([0, 1]);
+
+    fireEvent.click(cell); // the browser's trailing click
+    expect(onCellClick).toHaveBeenCalledTimes(1);
+  });
+
+  it("hits the released cell, not the one a retargeted click names", () => {
+    const onCellClick = vi.fn();
+    renderGrid({}, onCellClick);
+    tap(byKey(0, 0));
+    tap(byKey(0, 1));
+    fireEvent.click(byKey(0, 0)); // Safari's stale-target click
+
+    expect(onCellClick).toHaveBeenCalledTimes(2);
+    expect(onCellClick.mock.calls.map((call) => call.slice(1))).toEqual([
+      [0, 0],
+      [0, 1],
+    ]);
+  });
+
+  it("still fires on a click with no pointer sequence (keyboard activation)", () => {
+    const onCellClick = vi.fn();
+    renderGrid({}, onCellClick);
+    fireEvent.click(byKey(0, 1));
+    expect(onCellClick).toHaveBeenCalledTimes(1);
+  });
+
+  it("ignores a non-primary release so a right-click only opens the recorder", () => {
+    const onCellClick = vi.fn();
+    renderGrid({}, onCellClick);
+    fireEvent.pointerDown(byKey(0, 1), { pointerId: 1, button: 2 });
+    fireEvent.pointerUp(byKey(0, 1), { pointerId: 1, button: 2 });
+    expect(onCellClick).not.toHaveBeenCalled();
+  });
+});
