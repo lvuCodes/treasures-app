@@ -23,6 +23,19 @@ button.cell.nodig {
   box-shadow: inset 0 0 0 3px var(--accent);
 }
 
+.cell.rec:has(.hit-twice) {
+  position: relative;
+}
+
+.hit-twice {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
 .cell.confirmed {
   background: var(--confirmed);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);

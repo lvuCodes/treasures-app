@@ -107,7 +107,11 @@ export function solve(grid: Grid, items: Item[]): SolverResult {
   // All cells tied for the highest probability — compared with a tolerance so a
   // genuine tie is never split by floating-point rounding.
   const topScore = scores.length > 0 ? scores[0].score : 0;
-  const top = scores.filter((s) => Math.abs(s.score - topScore) < 1e-9);
+  const tied = scores.filter((s) => Math.abs(s.score - topScore) < 1e-9);
+  // A tie between a one-hit and a two-hit cell goes to the one-hit cell: the
+  // same expected find per hammer, but it reveals after a single swing.
+  const oneHit = tied.filter((s) => grid[s.row][s.col] === 1);
+  const top = oneHit.length > 0 ? oneHit : tied;
 
   return { scores, top };
 }

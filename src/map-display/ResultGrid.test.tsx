@@ -139,3 +139,26 @@ describe("ResultGrid rapid-tap handling (issue #18)", () => {
     expect(onCellClick).not.toHaveBeenCalled();
   });
 });
+
+describe("ResultGrid hit-twice badge (#16)", () => {
+  it("marks a recommended rock with a ×2 badge", () => {
+    const g = emptyGrid();
+    g[0][0] = 2;
+    render(
+      <ResultGrid
+        grid={g}
+        result={baseResult({ top: new Set(["0,0"]), eliminated: new Set() })}
+        dug={new Map()}
+        overlay={new Map()}
+        onCellClick={vi.fn()}
+        onCellContextMenu={vi.fn()}
+      />,
+    );
+    expect(byKey(0, 0).querySelector(".hit-twice")?.textContent).toBe("×2");
+  });
+
+  it("leaves a recommended soil cell without the badge", () => {
+    renderGrid({ top: new Set(["0,1"]), eliminated: new Set() });
+    expect(byKey(0, 1).querySelector(".hit-twice")).toBeNull();
+  });
+});

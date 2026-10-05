@@ -24,7 +24,7 @@ export const MAP_LEGEND: { icon: ReactNode; label: string }[] = [
     ),
     label: "1 / 2 hits remaining",
   },
-  { icon: "⛏️ / ⚒️", label: "recommended hit" },
+  { icon: "⛏️ / ⚒️", label: "recommended hit - ×2 means hit twice" },
   { icon: "🟪 / 🟣", label: "1 / 2 hits guaranteed item - item TBD" },
   { icon: "🟥 / 🔴", label: "unviable hit" },
   { icon: "🟧 / 🟠", label: "1 / 2 hits possible item edge" },
