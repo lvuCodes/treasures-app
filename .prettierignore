@@ -10,3 +10,7 @@ test-results
 
 # Generated test data — expanding it buries real diffs.
 src/calculator/fixtures
+
+# Generated AI-usage disclosure and its ledger.
+AI-USAGE.md
+.ai-attribution
