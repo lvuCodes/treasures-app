@@ -26,6 +26,9 @@ import App from "./App.tsx";
 // Site CSS after the App import so its rules win the equal-specificity cascade
 // on source order over the shared @lvucodes/ui primitives App.tsx pulls in.
 import "./index.css";
+import { seedDefaultTheme } from "./theme-boot.ts";
+
+seedDefaultTheme();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

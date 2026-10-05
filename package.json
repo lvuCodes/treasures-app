@@ -27,7 +27,7 @@
   },
   "prettier": "@lvucodes/ui/prettier",
   "dependencies": {
-    "@lvucodes/ui": "^0.1.1",
+    "@lvucodes/ui": "^0.1.2",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
   },
