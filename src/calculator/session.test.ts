@@ -231,3 +231,26 @@ describe("evaluate — recommendation excludes settled cells and items", () => {
     for (const key of r.top) expect(runs.has(key)).toBe(true);
   });
 });
+
+describe("evaluate: tentative edges of a jointly located item (#40)", () => {
+  it("drops the possible-edge flag from a rejected candidate that overlaps another item", () => {
+    const grid = Array.from({ length: 7 }, () => Array.from({ length: 7 }, () => 1));
+    const items: ItemDims[] = [ITEM_TYPES[4], ITEM_TYPES[5], ITEM_TYPES[6]];
+    const dug = new Map<string, DigCode>([
+      ["3,5", 1],
+      ["4,2", 3],
+    ]);
+    const parts = new Map([
+      ["3,5", "╔"],
+      ["4,2", "╚"],
+    ]);
+    const r = evaluate(grid, dug, parts, items);
+
+    expect(r.located.has(3)).toBe(true);
+    for (const key of ["3,4", "4,4"]) {
+      const [row, col] = key.split(",").map(Number);
+      expect(r.confirmed[row][col].tentative).toBeFalsy();
+      expect(r.eliminated.has(key)).toBe(true);
+    }
+  });
+});
