@@ -177,6 +177,9 @@ export function ResultGrid({
                 aria-label={key}
               >
                 <span className="glyph">{over?.node ?? coreContent}</span>
+                {isRec && v === 2 && !isCracked && !over?.node && (
+                  <span className="hit-twice">×2</span>
+                )}
               </button>
             );
           }),

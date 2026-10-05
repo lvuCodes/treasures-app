@@ -91,11 +91,12 @@ describe("Recommend First Dig", () => {
     it("a rock cell can still win when its raw probability is more than double", () => {
       // 1x3 row [1, 2, 1] with a 1x2 item: center cell appears in both
       // placements (prob 1.0), edges in one each (0.5). Cost-weighted the
-      // center rock scores 0.5 and ties the edges rather than dominating.
+      // center rock scores 0.5 and ties the edges rather than dominating, and
+      // the tie goes to the one-hit edges.
       const grid = [[1, 2, 1]];
       const items: Item[] = [{ count: 1, long: 2, short: 1 }];
       const result = solve(grid, items);
-      expect(result.top.map((c) => `${c.row},${c.col}`).sort()).toEqual(["0,0", "0,1", "0,2"]);
+      expect(result.top.map((c) => `${c.row},${c.col}`).sort()).toEqual(["0,0", "0,2"]);
     });
   });
 
@@ -126,5 +127,12 @@ describe("Recommend First Dig", () => {
         }
       });
     });
+  });
+});
+
+describe("solve: tie-break toward one-hit cells (#16)", () => {
+  it("keeps a rock recommended when no one-hit cell ties it", () => {
+    const { top } = solve([[0, 2, 0]], [{ count: 1, long: 1, short: 1 }]);
+    expect(top.map((s) => `${s.row},${s.col}`)).toEqual(["0,1"]);
   });
 });
