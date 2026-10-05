@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { remapRepick, evaluate, type DigCode, type ItemDims } from "./session";
+import { remapRepick, evaluate, viableGlyphs, type DigCode, type ItemDims } from "./session";
 
 // Mirror of the UI's ITEM_TYPES order — remapRepick keys hidden counts to it.
 const ITEM_TYPES: ItemDims[] = [
@@ -252,5 +252,36 @@ describe("evaluate: tentative edges of a jointly located item (#40)", () => {
       expect(r.confirmed[row][col].tentative).toBeFalsy();
       expect(r.eliminated.has(key)).toBe(true);
     }
+  });
+});
+
+describe("viableGlyphs (#39)", () => {
+  const grid = [
+    [1, 1, 0, 1, 1],
+    [1, 1, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+  ];
+  const items: ItemDims[] = [ITEM_TYPES[1], ITEM_TYPES[4]];
+  const none = new Map<string, DigCode>();
+  const noParts = new Map<string, string>();
+  const noFootprints = new Map<number, string[]>();
+
+  it("withholds a piece that would leave another piece nowhere to fit", () => {
+    expect(viableGlyphs(grid, none, noParts, items, noFootprints, 0, 0, 1).size).toBe(0);
+  });
+
+  it("keeps the only piece that leaves the board solvable", () => {
+    expect([...viableGlyphs(grid, none, noParts, items, noFootprints, 0, 0, 2)]).toEqual(["╔"]);
+  });
+
+  it("falls back to geometric feasibility on an already-unsolvable board", () => {
+    const blocked = [
+      [1, 1, 0, 0, 0],
+      [1, 1, 0, 0, 0],
+      [0, 0, 0, 0, 0],
+    ];
+    expect(viableGlyphs(blocked, none, noParts, items, noFootprints, 0, 0, 1).size).toBeGreaterThan(
+      0,
+    );
   });
 });

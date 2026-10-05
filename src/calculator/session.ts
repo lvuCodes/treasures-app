@@ -190,6 +190,32 @@ export function feasibleGlyphs(
   return set;
 }
 
+export function viableGlyphs(
+  grid: number[][],
+  dug: Map<string, DigCode>,
+  parts: Map<string, string>,
+  items: ItemDims[],
+  footprints: Map<number, string[]>,
+  r: number,
+  c: number,
+  itemIndex: number,
+  passableCells: Set<string> = new Set(),
+): Set<string | undefined> {
+  const feasible = feasibleGlyphs(grid, dug, items, footprints, r, c, itemIndex);
+  if (evaluate(grid, dug, parts, items, passableCells).kind === "unsolvable") return feasible;
+  const key = cellKey(r, c);
+  const viable = new Set<string | undefined>();
+  for (const glyph of feasible) {
+    const nextDug = new Map(dug).set(key, itemIndex);
+    const nextParts = new Map(parts);
+    if (glyph === undefined) nextParts.delete(key);
+    else nextParts.set(key, glyph);
+    if (evaluate(grid, nextDug, nextParts, items, passableCells).kind !== "unsolvable")
+      viable.add(glyph);
+  }
+  return viable;
+}
+
 // "Keep map, reset items" re-pick: the player keeps every found piece and
 // declares only the still-hidden pieces to add (`hiddenCounts`, one entry per
 // item type). Each found piece is re-indexed into the new combined inventory so

@@ -4,9 +4,9 @@
 
 | Measure | Lines added |
 |---|---|
-| **By Claude** | 55 |
+| **By Claude** | 145 |
 | **By the author** | 0 |
-| **Total since baseline** | 55 |
+| **Total since baseline** | 145 |
 
 Baseline commit `de90f51` (2026-10-05). Regenerate with `node scripts/ai-attribution.mjs`.
 
@@ -34,4 +34,4 @@ Baseline commit `de90f51` (2026-10-05). Regenerate with `node scripts/ai-attribu
 - `src/calculator/fixtures/**`
 - `scripts/ai-attribution.mjs`
 
-_Generated 2026-10-05 23:06:05Z.
+_Generated 2026-10-05 23:14:01Z.
