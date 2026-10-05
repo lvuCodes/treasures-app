@@ -151,39 +151,36 @@ export function analyzeArrangements(units: PlacementUnit[], targets: JointTarget
     const distinct = new Map<string, number[]>();
     for (const i of unitIdxs) for (const pi of live[i]) distinct.set(sig(pls[i][pi]), pls[i][pi]);
 
-    if (distinct.size === unitIdxs.length) {
-      // Fully pinned set. Assign found units to the region holding their record;
-      // remaining regions go to the remaining units in a stable order.
-      const regions = [...distinct.values()];
-      const taken = new Set<string>();
-      const foundUnits = unitIdxs.filter((i) => units[i].found);
-      const otherUnits = unitIdxs.filter((i) => !units[i].found);
-      for (const i of foundUnits) {
-        const region = regions.find(
-          (p) => !taken.has(sig(p)) && units[i].recorded.every((f) => p.includes(f)),
-        );
-        if (!region) continue;
-        taken.add(sig(region));
-        located.add(units[i].index);
-        regionOf.set(units[i].index, region);
-      }
-      const leftover = regions.filter((p) => !taken.has(sig(p))).sort((a, b) => a[0] - b[0]); // reading order by first (top-left) cell
-      const remaining = otherUnits.sort((a, b) => units[a].index - units[b].index);
-      leftover.forEach((region, j) => {
-        const i = remaining[j];
-        if (i === undefined) return;
-        located.add(units[i].index);
-        regionOf.set(units[i].index, region);
-      });
-    } else {
-      // Not pinned as a set, but an individual unit may still be pinned.
-      for (const i of unitIdxs) {
-        if (live[i].length === 1) {
-          located.add(units[i].index);
-          regionOf.set(units[i].index, pls[i][live[i][0]]);
-        }
-      }
+    // A placement every arrangement uses belongs to one of the group's
+    // interchangeable units. Found units take the required region holding their
+    // record; the rest fill the remaining required regions in reading order.
+    const inGroup = new Set(unitIdxs);
+    const regions = [...distinct.values()].filter((p) => {
+      const without = pls.map((list, i) =>
+        inGroup.has(i) ? list.filter((q) => sig(q) !== sig(p)) : list,
+      );
+      return !canPlaceAll(without, all, new Set());
+    });
+    const taken = new Set<string>();
+    const foundUnits = unitIdxs.filter((i) => units[i].found);
+    const otherUnits = unitIdxs.filter((i) => !units[i].found);
+    for (const i of foundUnits) {
+      const region = regions.find(
+        (p) => !taken.has(sig(p)) && units[i].recorded.every((f) => p.includes(f)),
+      );
+      if (!region) continue;
+      taken.add(sig(region));
+      located.add(units[i].index);
+      regionOf.set(units[i].index, region);
     }
+    const leftover = regions.filter((p) => !taken.has(sig(p))).sort((a, b) => a[0] - b[0]);
+    const remaining = otherUnits.sort((a, b) => units[a].index - units[b].index);
+    leftover.forEach((region, j) => {
+      const i = remaining[j];
+      if (i === undefined) return;
+      located.add(units[i].index);
+      regionOf.set(units[i].index, region);
+    });
   }
 
   // Attribute each forced cell to its owning located item, when one covers it.
