@@ -223,6 +223,44 @@ export function itemFootprints(
   return cands;
 }
 
+// Candidate footprints per item, where no candidate may cover another item's
+// recorded part or the footprint of an item already pinned to one placement.
+// Pinning repeats until stable, since one item settling can settle another.
+export function resolveFootprints(
+  partsByItem: Map<number, RecordedPart[]>,
+  dimsByIndex: Map<number, { long: number; short: number }>,
+  fits: (cells: FootprintCell[]) => boolean,
+): Map<number, FootprintCell[][]> {
+  const claimed = new Map<string, number>();
+  for (const [index, parts] of partsByItem)
+    for (const { row, col } of parts) claimed.set(`${row},${col}`, index);
+  const candidatesOf = (index: number, parts: RecordedPart[]) => {
+    const dims = dimsByIndex.get(index);
+    if (!dims) return [];
+    const fitsItem = (cells: FootprintCell[]) =>
+      fits(cells) &&
+      cells.every(({ row, col }) => (claimed.get(`${row},${col}`) ?? index) === index);
+    return itemFootprints(parts, dims.long, dims.short, fitsItem);
+  };
+
+  const pinned = new Set<number>();
+  for (let changed = true; changed;) {
+    changed = false;
+    for (const [index, parts] of partsByItem) {
+      if (pinned.has(index)) continue;
+      const candidates = candidatesOf(index, parts);
+      if (candidates.length !== 1) continue;
+      pinned.add(index);
+      changed = true;
+      for (const { row, col } of candidates[0]) claimed.set(`${row},${col}`, index);
+    }
+  }
+
+  const out = new Map<number, FootprintCell[][]>();
+  for (const [index, parts] of partsByItem) out.set(index, candidatesOf(index, parts));
+  return out;
+}
+
 // Walk a grid, gather each item's recorded parts, and return a clone with its
 // footprint cells flagged. A cell in EVERY candidate footprint is confirmed (🟩
 // — definitely the item); a cell in only some is tentative (🟠 — the unresolved
@@ -267,11 +305,10 @@ export function deriveConfirmedState(
     }
   }
 
+  const resolved = resolveFootprints(partsByItem, dimsByIndex, fits);
+
   const located = new Set<number>();
-  for (const [index, parts] of partsByItem) {
-    const dims = dimsByIndex.get(index);
-    if (!dims) continue;
-    const candidates = itemFootprints(parts, dims.long, dims.short, fits);
+  for (const [index, candidates] of resolved) {
     if (candidates.length === 0) continue;
     if (candidates.length === 1) located.add(index);
 

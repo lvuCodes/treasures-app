@@ -285,3 +285,24 @@ describe("viableGlyphs (#39)", () => {
     );
   });
 });
+
+describe("evaluate: a footprint never overlaps another item (#28)", () => {
+  it("does not locate an item onto cells another recorded item occupies", () => {
+    const grid = Array.from({ length: 7 }, () => Array.from({ length: 7 }, () => 1));
+    const items: ItemDims[] = ITEM_TYPES.slice(0, 7);
+    const dug = new Map<string, DigCode>([
+      ["3,0", 6],
+      ["3,3", 7],
+      ["6,2", 0],
+    ]);
+    const parts = new Map([
+      ["3,0", "╠"],
+      ["3,3", "╗"],
+    ]);
+    const r = evaluate(grid, dug, parts, items);
+
+    expect(r.located.has(6)).toBe(true);
+    expect(r.located.has(7)).toBe(false);
+    for (const row of r.confirmed) for (const cell of row) expect(cell.confirmedItem).not.toBe(7);
+  });
+});

@@ -7,6 +7,7 @@ import {
   deriveConfirmedState,
   inferFootprints,
   itemFootprints,
+  resolveFootprints,
   type FootprintCell,
   type RecordedPart,
 } from "./footprint";
@@ -132,14 +133,16 @@ export function recordedFootprints(
     partsByItem.set(code, list);
   }
 
+  const resolved = resolveFootprints(
+    partsByItem,
+    new Map(items.map((d, i) => [i + 1, d])),
+    boundsFit,
+  );
   const out = new Map<number, string[]>();
   for (const [code, recParts] of partsByItem) {
-    const dims = items[code - 1];
     const union = new Set<string>();
-    if (dims) {
-      for (const fp of itemFootprints(recParts, dims.long, dims.short, boundsFit)) {
-        for (const { row, col } of fp) union.add(cellKey(row, col));
-      }
+    for (const fp of resolved.get(code) ?? []) {
+      for (const { row, col } of fp) union.add(cellKey(row, col));
     }
     // Fall back to the recorded cells if no candidate footprint fits.
     if (union.size === 0) for (const p of recParts) union.add(cellKey(p.row, p.col));
