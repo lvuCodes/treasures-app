@@ -424,6 +424,15 @@ export function evaluate(
       for (const idx of joint.located) located.add(idx);
       solved = joint.solvedRegion;
 
+      const stillAmbiguous = new Set<number>();
+      for (const u of units)
+        if (u.found && !located.has(u.index))
+          for (const p of u.placements) for (const f of p) stillAmbiguous.add(f);
+      for (let r = 0; r < rows; r++)
+        for (let c = 0; c < cols; c++)
+          if (confirmed[r][c].tentative && !stillAmbiguous.has(flat(r, c)))
+            confirmed[r][c].tentative = false;
+
       // Score only what is still genuinely unknown. A deduced-guaranteed cell is
       // a certainty the board already shows, and the display gives that state
       // precedence over the hammer — leaving it in the ranking lets it outscore
