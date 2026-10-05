@@ -375,6 +375,8 @@ function App() {
           items={expandedItems}
           grid={grid}
           dug={dug}
+          parts={parts}
+          passableCells={new Set(overlay.keys())}
           located={result?.located ?? new Set()}
           anchorItem={anchorItem()}
           footprints={footprints}

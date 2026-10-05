@@ -1,5 +1,11 @@
 import type { ReactNode } from "react";
-import { cellKey, feasibleGlyphs, partLayout, type DigCode } from "../calculator/session";
+import {
+  cellKey,
+  feasibleGlyphs,
+  partLayout,
+  viableGlyphs,
+  type DigCode,
+} from "../calculator/session";
 import { KEYCAPS, type ItemType } from "../inventory";
 import type { PickerAnchor } from "./usePicker";
 import "./recorder.css";
@@ -10,6 +16,8 @@ interface PickerProps {
   items: ItemType[];
   grid: number[][];
   dug: Map<string, DigCode>;
+  parts?: Map<string, string>;
+  passableCells?: Set<string>;
   located: Set<number>; // item indices whose footprint is pinned
   // The item the solver has determined owns the anchor cell (a confirmed
   // footprint, or a guaranteed cell whose owner is deduced); null when the
@@ -42,6 +50,8 @@ export function Picker({
   items,
   grid,
   dug,
+  parts = new Map(),
+  passableCells = new Set(),
   located,
   anchorItem,
   footprints,
@@ -77,7 +87,9 @@ export function Picker({
     found.has(itemIndex) &&
     (located.has(itemIndex) || !(footprints.get(itemIndex)?.includes(cellKey(r, c)) ?? false));
   const feasibleFor = (itemIndex: number) =>
-    feasibleGlyphs(grid, dug, items, footprints, r, c, itemIndex);
+    emptyOverride
+      ? feasibleGlyphs(grid, dug, items, footprints, r, c, itemIndex)
+      : viableGlyphs(grid, dug, parts, items, footprints, r, c, itemIndex, passableCells);
 
   return (
     <div

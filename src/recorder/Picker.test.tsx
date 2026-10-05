@@ -219,3 +219,19 @@ describe("Picker — part selection view", () => {
     expect(document.querySelectorAll("button.part-cell").length).toBe(2);
   });
 });
+
+describe("Picker — solvability filter (#39)", () => {
+  it("hides a piece whose placement would leave another piece nowhere to fit", () => {
+    renderPicker({
+      items: [ITEM_TYPES[1], ITEM_TYPES[4]],
+      grid: [
+        [1, 1, 0, 1, 1],
+        [1, 1, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+      ],
+    });
+    const labels = [...document.querySelectorAll(".picker-grid button")].map((b) => b.textContent);
+    expect(labels.some((t) => t?.includes(ITEM_TYPES[4].label))).toBe(true);
+    expect(labels.some((t) => t?.includes(ITEM_TYPES[1].label))).toBe(false);
+  });
+});
