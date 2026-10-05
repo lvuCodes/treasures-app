@@ -9,3 +9,14 @@ on:
 jobs:
   site-ci:
     uses: lvuCodes/terminal-themes/.github/workflows/site-ci.yml@main
+
+  ai-attribution:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/ai-attribution.mjs --check

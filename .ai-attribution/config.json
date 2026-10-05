@@ -1,0 +1,31 @@
+{
+  "baselineCommit": "de90f51e790c8d4cd09759252da0686b90305bd8",
+  "baselineDate": "2026-10-05",
+  "report": "AI-USAGE.md",
+  "perFile": false,
+  "exclude": [
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "yarn.lock",
+    "dist/**",
+    "build/**",
+    "vendor/**",
+    "**/*.min.*",
+    "AI-USAGE.md",
+    ".ai-attribution/**",
+    "treasures-app.html",
+    "coverage/**",
+    "src/calculator/fixtures/**",
+    "scripts/ai-attribution.mjs"
+  ],
+  "prose": {
+    "paths": [],
+    "retainSnapshots": true,
+    "publish": {
+      "mode": "none",
+      "showWhenNone": true,
+      "outDir": "public/data/ai-attribution",
+      "maxDiffBytes": 65536
+    }
+  }
+}
