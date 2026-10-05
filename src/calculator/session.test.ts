@@ -306,3 +306,21 @@ describe("evaluate: a footprint never overlaps another item (#28)", () => {
     for (const row of r.confirmed) for (const cell of row) expect(cell.confirmedItem).not.toBe(7);
   });
 });
+
+describe("evaluate: a region every arrangement uses is located (#26)", () => {
+  it("locates one of two identical pieces when its region is certain", () => {
+    const grid = [
+      [1, 0, 1, 1, 1],
+      [1, 0, 0, 0, 1],
+      [1, 0, 0, 0, 1],
+    ];
+    const items: ItemDims[] = [ITEM_TYPES[2], ITEM_TYPES[2]];
+    const r = evaluate(grid, new Map(), new Map(), items);
+
+    expect(r.located.has(1)).toBe(true);
+    expect(r.located.has(2)).toBe(false);
+    for (const key of ["0,0", "1,0", "2,0"]) expect(r.forcedItem.get(key)).toBe(1);
+    expect(r.forced.has("0,4")).toBe(true);
+    expect(r.forcedItem.has("0,4")).toBe(false);
+  });
+});
