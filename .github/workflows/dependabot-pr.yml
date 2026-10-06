@@ -1,0 +1,12 @@
+name: Dependabot PR
+
+on:
+  pull_request_target:
+    types: [opened, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  draft:
+    uses: lvuCodes/terminal-themes/.github/workflows/dependabot-draft.yml@main

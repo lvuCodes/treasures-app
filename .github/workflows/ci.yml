@@ -4,6 +4,7 @@ on:
   push:
     branches: [dev]
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 
 jobs:
@@ -11,6 +12,11 @@ jobs:
     uses: lvuCodes/terminal-themes/.github/workflows/site-ci.yml@main
 
   ai-attribution:
+    if: >-
+      github.event_name != 'pull_request' ||
+      (!github.event.pull_request.draft &&
+       !(github.event.pull_request.user.login == 'dependabot[bot]' &&
+         contains(fromJSON('["opened", "reopened"]'), github.event.action)))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
