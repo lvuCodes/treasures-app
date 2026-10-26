@@ -156,11 +156,89 @@ export const coAuthoredAdded = (root, baseline, exclude = [], run = (args) => gi
     exclude,
   );
 
+const CONVENTIONAL = /^(\w+)(?:\([^)]*\))?!?:/;
+
+// Unit and record separators keep subjects and trailer values that contain commas intact.
+export const CHANGE_FORMAT =
+  "%x00%P%x1f%an%x1f%ae%x1f%s%x1f%(trailers:key=Change-Type,valueonly,separator=%x1e)%x1f%(trailers:key=Co-Authored-By,valueonly,separator=%x1e)";
+
+export const changeType = ({ trailer = "", parents = 1, subject = "" }) => {
+  const labelled = trailer.split("\x1e")[0].trim().toLowerCase();
+  if (labelled) return labelled;
+  if (parents > 1) return "merge";
+  const match = CONVENTIONAL.exec(subject);
+  return match ? match[1].toLowerCase() : "unlabeled";
+};
+
+export const parseChanges = (text, { exclude = [], excludeAuthors = [] } = {}) => {
+  const byType = new Map();
+  for (const chunk of text.split("\0").filter(Boolean)) {
+    const nl = chunk.indexOf("\n");
+    const [parents = "", name = "", email = "", subject = "", trailer = "", coAuthors = ""] = (
+      nl === -1 ? chunk : chunk.slice(0, nl)
+    ).split("\x1f");
+    if (/\[bot\]@/.test(email) || excludeAuthors.includes(name)) continue;
+    const numstat = nl === -1 ? "" : chunk.slice(nl + 1);
+    // A commit touching only excluded paths, like the report's own regeneration, would
+    // otherwise make every freshly committed report stale.
+    const counted = numstat.split("\n").some((line) => {
+      const [a, , path] = line.split("\t");
+      return path && a !== "-" && !isExcluded(path, exclude);
+    });
+    if (!counted) continue;
+    const added = parseNumstat(numstat, exclude);
+    const type = changeType({
+      trailer,
+      parents: parents.split(" ").filter(Boolean).length,
+      subject,
+    });
+    const row = byType.get(type) || { type, commits: 0, claude: 0, author: 0 };
+    row.commits += 1;
+    if (coAuthors.split("\x1e").some((v) => /^claude\b/i.test(v.trim()))) row.claude += added;
+    else row.author += added;
+    byType.set(type, row);
+  }
+  return [...byType.values()].sort(
+    (a, b) => b.claude + b.author - (a.claude + a.author) || a.type.localeCompare(b.type),
+  );
+};
+
+// remerge shows a merge commit's own conflict resolution, not the branch it brought in.
+export const changesSince = (root, baseline, options, run = (args) => git(root, args)) =>
+  parseChanges(
+    run([
+      "log",
+      "--numstat",
+      "--no-renames",
+      "--diff-merges=remerge",
+      `--format=${CHANGE_FORMAT}`,
+      `${baseline}..HEAD`,
+    ]),
+    options,
+  );
+
+export const changesSection = (changes = []) => {
+  const rows = changes.length
+    ? changes
+        .map(
+          (c) =>
+            `| \`${c.type}\` | ${c.commits} | ${c.claude.toLocaleString("en-US")} | ${c.author.toLocaleString("en-US")} |`,
+        )
+        .join("\n")
+    : "| _none_ | 0 | 0 | 0 |";
+  return `## Changes by Type
+
+| Change type | Commits | By Claude | By the author |
+|---|---|---|---|
+${rows}
+`;
+};
+
 export const percent = (part, whole) => (whole > 0 ? Math.round((part / whole) * 1000) / 10 : 0);
 
 const TIMESTAMP = "_Generated ";
 
-export const buildReport = ({ config, aiAdded, totalAdded, generatedAt }) => {
+export const buildReport = ({ config, aiAdded, totalAdded, generatedAt, changes = [] }) => {
   // The ledger counts every edit; the diff counts what survived. Rewriting its own work
   // can push Claude's tally past the net total, and a share over 100% is nonsense — so
   // it is capped, and the raw tally is stated rather than quietly discarded.
@@ -186,11 +264,13 @@ ${headline}
 ${capped}
 Baseline commit \`${config.baselineCommit.slice(0, 7)}\` (${config.baselineDate}). Regenerate with \`node scripts/ai-attribution.mjs\`.
 
+${changesSection(changes)}
 ## Measurement Scope
 
 - The figures count **lines added since the baseline commit**, not lines currently surviving in the working tree. A line written once and rewritten twice is counted three times.
 - Everything committed **before the baseline** is unattributed and appears in no column. Authorship there cannot be honestly reconstructed, so it is not guessed at.
 - Claude's lines are the larger of two counts: edits the ledger recorded through **Claude Code's own editing tools**, and every line added by a commit carrying a \`Co-Authored-By: Claude\` trailer. Anything else counts as the author's.
+- Change types come from each commit's \`Change-Type:\` trailer, otherwise its conventional-commit prefix (\`fix\`, \`ci\`, \`docs\`), otherwise \`unlabeled\`. A merge commit without a trailer is \`merge\`, and its lines are only those its conflict resolution added. Per-type lines follow the \`Co-Authored-By: Claude\` trailer alone, so their Claude total can differ from the headline, which also counts ledger edits.
 - A line count is **not a claim about authorship of design or direction**. What to build, which generated output to keep, and what to reject are the author's, and none of it appears in a diff.
 - Figures are computed from \`.ai-attribution/ledger.jsonl\` — an append-only record written as each edit lands — joined against \`git log --numstat\`. The ledger is committed as the evidence behind this report.
 
@@ -249,6 +329,10 @@ export const generate = (root = ROOT) => {
       config,
       aiAdded,
       totalAdded: committed + uncommitted + untracked,
+      changes: changesSince(root, baseline, {
+        exclude,
+        excludeAuthors: config.excludeAuthors || [],
+      }),
       generatedAt: new Date().toISOString().slice(0, 19).replace("T", " ") + "Z",
     }),
   };
