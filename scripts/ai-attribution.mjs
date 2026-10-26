@@ -60,6 +60,22 @@ export const parseNumstat = (text, exclude = []) => {
   return added;
 };
 
+export const AUTHOR = "\0author ";
+
+export const withoutAuthors = (text, authors = []) => {
+  let skip = false;
+  return text
+    .split("\n")
+    .filter((line) => {
+      if (line.startsWith(AUTHOR)) {
+        skip = authors.includes(line.slice(AUTHOR.length));
+        return false;
+      }
+      return !skip;
+    })
+    .join("\n");
+};
+
 // A file Claude created but nobody has staged is in the ledger yet in no git diff, so
 // without this its lines would count as AI-added out of a denominator missing them.
 export const untrackedAdded = (
@@ -206,7 +222,16 @@ export const generate = (root = ROOT) => {
   // is regenerated from them, so counting it would move the number it reports.
   const exclude = [...(config.exclude || []), config.report];
   const committed = parseNumstat(
-    git(root, ["log", "--numstat", "--no-renames", "--format=", `${baseline}..HEAD`]),
+    withoutAuthors(
+      git(root, [
+        "log",
+        "--numstat",
+        "--no-renames",
+        "--format=%x00author %an",
+        `${baseline}..HEAD`,
+      ]),
+      config.excludeAuthors || [],
+    ),
     exclude,
   );
   const uncommitted = parseNumstat(

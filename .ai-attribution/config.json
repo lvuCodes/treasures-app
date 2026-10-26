@@ -3,6 +3,7 @@
   "baselineDate": "2026-10-05",
   "report": "AI-USAGE.md",
   "perFile": false,
+  "excludeAuthors": ["dependabot[bot]"],
   "exclude": [
     "package-lock.json",
     "pnpm-lock.yaml",
