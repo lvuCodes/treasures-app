@@ -31,6 +31,7 @@ describe("withoutAuthors", () => {
 describe("main", () => {
   it("leaves the report current after a commit by an excluded author", () => {
     const root = mkdtempSync(join(tmpdir(), "ai-attr-"));
+    for (const key of Object.keys(process.env)) if (key.startsWith("GIT_")) delete process.env[key];
     const git = (args, name = "Lauren Vu") =>
       execFileSync(
         "git",
