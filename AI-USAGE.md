@@ -4,9 +4,9 @@
 
 | Measure | Lines added |
 |---|---|
-| **By Claude** | 638 |
+| **By Claude** | 640 |
 | **By the author** | 0 |
-| **Total since baseline** | 638 |
+| **Total since baseline** | 640 |
 
 Baseline commit `de90f51` (2026-10-05). Regenerate with `node scripts/ai-attribution.mjs`.
 
@@ -20,6 +20,7 @@ Baseline commit `de90f51` (2026-10-05). Regenerate with `node scripts/ai-attribu
 | `ci` | 2 | 31 | 0 |
 | `chore` | 1 | 23 | 0 |
 | `dependabot-fix` | 2 | 9 | 0 |
+| `refactor` | 1 | 2 | 0 |
 | `test` | 1 | 1 | 0 |
 
 ## Measurement Scope
@@ -47,4 +48,4 @@ Baseline commit `de90f51` (2026-10-05). Regenerate with `node scripts/ai-attribu
 - `src/calculator/fixtures/**`
 - `scripts/ai-attribution.mjs`
 
-_Generated 2026-11-13 06:03:26Z.
+_Generated 2026-11-13 14:30:55Z.
