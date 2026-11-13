@@ -14,14 +14,11 @@ Baseline commit `de90f51` (2026-10-05). Regenerate with `node scripts/ai-attribu
 
 | Change type | Commits | By Claude | By the author |
 |---|---|---|---|
-| `fix` | 6 | 370 | 0 |
-| `feat` | 2 | 135 | 0 |
+| `fix` | 5 | 294 | 0 |
+| `release` | 1 | 236 | 0 |
 | `unlabeled` | 1 | 69 | 0 |
-| `ci` | 2 | 31 | 0 |
 | `chore` | 1 | 23 | 0 |
-| `dependabot-fix` | 2 | 9 | 0 |
-| `refactor` | 1 | 2 | 0 |
-| `test` | 1 | 1 | 0 |
+| `ci` | 1 | 18 | 0 |
 
 ## Measurement Scope
 
@@ -48,4 +45,4 @@ Baseline commit `de90f51` (2026-10-05). Regenerate with `node scripts/ai-attribu
 - `src/calculator/fixtures/**`
 - `scripts/ai-attribution.mjs`
 
-_Generated 2026-11-13 14:30:55Z.
+_Generated 2026-11-13 15:56:26Z.
