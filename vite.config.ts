@@ -59,7 +59,7 @@ export default defineConfig({
     server: { deps: { inline: ["@lvucodes/ui"] } },
     // Unit tests live under src/; the Playwright e2e/*.spec.ts suite is driven by
     // its own runner and must not be collected here.
-    include: ["src/**/*.test.{ts,tsx}"],
+    include: ["src/**/*.test.{ts,tsx}", "scripts/**/*.test.mjs"],
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],

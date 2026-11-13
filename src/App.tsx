@@ -423,6 +423,14 @@ function App() {
           >
             GNU GPL v3
           </a>
+          .{" "}
+          <a
+            href="https://github.com/lvuCodes/treasures-app"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            treasures-app on GitHub
+          </a>
           .
         </p>
       </footer>

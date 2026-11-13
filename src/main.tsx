@@ -21,12 +21,12 @@ import { createRoot } from "react-dom/client";
 // globs for app source, so a barrel's own `import "…theme.css"` gets dropped
 // from the bundle — the palette must be pulled in from the entry, which is never
 // shaken, or the built app ships with no colour tokens at all.
+import { seedDefaultTheme } from "@lvucodes/ui";
 import "@lvucodes/ui/theme.css";
 import App from "./App.tsx";
 // Site CSS after the App import so its rules win the equal-specificity cascade
 // on source order over the shared @lvucodes/ui primitives App.tsx pulls in.
 import "./index.css";
-import { seedDefaultTheme } from "./theme-boot.ts";
 
 seedDefaultTheme();
 

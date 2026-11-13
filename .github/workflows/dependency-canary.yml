@@ -1,0 +1,13 @@
+name: Dependency Canary
+
+on:
+  schedule:
+    - cron: "15 13 * * 1"
+  workflow_dispatch:
+
+jobs:
+  dependency-canary:
+    permissions:
+      contents: read
+      issues: write
+    uses: lvuCodes/terminal-themes/.github/workflows/dependency-canary.yml@main

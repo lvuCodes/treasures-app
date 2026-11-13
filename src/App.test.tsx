@@ -148,6 +148,14 @@ describe("footer copyright", () => {
       "https://github.com/lvuCodes",
     );
   });
+
+  it("links the project's own repository in a new tab, named for the repo", () => {
+    render(<App />);
+    const repo = screen.getByRole("link", { name: "treasures-app on GitHub" });
+    expect(repo.getAttribute("href")).toBe("https://github.com/lvuCodes/treasures-app");
+    expect(repo.getAttribute("target")).toBe("_blank");
+    expect(repo.getAttribute("rel")).toBe("noreferrer noopener");
+  });
 });
 
 describe("responsive grid", () => {
